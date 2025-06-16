@@ -12,11 +12,80 @@
      <!-- method="POST" submits the form and its contents but doesn't show in the url -->
 
     <form action="submit.php" method="get">
-        <input type="text" name="firstname">
+        <label for="firstname">First Name</label>
+        <input type="text" name="firstname" required>
+        <br>
+        <label for="surname">Surname </label>
+        <input type="text" name="surname" required>
+        <br>
+        <label for="email">Email </label>
+        <input type="email" name="mail" id="mail" required>
+        <br>
+        <label for="tel">Telephone </label>
+        <input type="tel" name="phonenumber" id="phonenumber" required>
         <br>
         <input type="submit" value="Submit">
         <br>
+        <br>
+        <br>
+        <br>
+        <br>
         <!-- <button type="submit"> Submit </button> -->
+
+<label for="fname">Firstname</label>
+<br>
+<input type="text" name="fname" id="fname">
+<br>
+<label for="car"> Choose a car:</label>
+<br>
+<select id="car" name="car" size="3" multiple>
+    <option value="volvo" >Volvo</option>
+    <option value="saab">Saab</option>
+    <option value="fiat">Fiat</option>
+    <option value="audi" selected>Audi</option>
+</select>
+<br>
+<textarea name="message" style="width: 200px; height: 100px;" rows="5" cols="10"> This where we comment</textarea>
+<br>
+<button type="button" onclick="alert('Hello World!')">Click Me!</button>
+<br>
+<br>
+<fieldset>
+<legend>BIODATA</legend>
+</fieldset>
+<br>
+    <input list="browsers">
+<datalist id="browsers">
+    <option value="Edge">
+    <option value="Firefox">
+    <option value="Chrome">
+    <option value="Opera">
+    <option value="Safari">
+</datalist>
+<output>
+<option>
+<optgroup>
+
+         
+    </form>
+    <form action="" method="">
+        <input type="datetime-local">
+        <br>
+        <input type="date">
+        <br>
+        <input type="week" name="" id="">
+        <input type="month" name="" id="">
+        <br>
+        <input type="day" name="" id="">
+        <br>
+        <input type="year">
+        <br>
+        <input type="address">
+        <br>
+        <button type="submit">Submit</button>
+        <input type="markarea">
+
+
     </form>
     
 </body>
