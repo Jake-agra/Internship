@@ -1,0 +1,41 @@
+    body{
+        /* background-color: aqua;
+        background-image: url(../images/p2.jpg);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover; */
+        background:url(../images/p2.jpg) no-repeat center center;
+        background-size: cover;
+    }
+h1{
+            color: red;
+            background: grey;
+        }
+        p{
+            text-align: center;
+        }
+        #image{
+            width: 200px;
+            height: 300px;
+        }
+        .form-input{
+            border: 2px solid blue;
+        }
+        .box{
+            width: 200px;
+            height: 200px;
+            background: #ff0080;
+            background-color: rgb(125, 190, 50);
+        }
+        .border{
+            border-width: 10px;
+            border-style: dotted;
+            border-color: red;
+            /* border: 10px solid red; */
+        }
+        .width-100px{
+            width: 100px;
+        }
+        .height-100px{
+            height: 100px;
+        }
