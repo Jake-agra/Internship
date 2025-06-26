@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCOM Institute of Technology | Premier Tech Education</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS for elements that need more precise control */
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .testimonial-card {
+            transition: all 0.3s ease;
+        }
+        .testimonial-card:hover {
+            transform: scale(1.03);
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800">
+    <!-- Top Announcement Bar -->
+    <div class="bg-blue-600 text-white text-center py-2 px-4">
+        <p class="text-sm md:text-base">🚀 Admissions Open for 2024 Batch! Apply Now - Limited Seats Available</p>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-10 w-auto" src="https://via.placeholder.com/50x50?text=GCOM" alt="GCOM Logo">
+                        <span class="ml-2 text-xl font-bold text-blue-800">GCOM Institute</span>
+                    </div>
+                </div>
+                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="#" class="text-blue-700 border-b-2 border-blue-700 px-3 py-2 text-sm font-medium">Home</a>
+                    <a href="#about" class="text-gray-600 hover:text-blue-700 px-3 py-2 text-sm font-medium">About</a>
+                    <a href="#courses" class="text-gray-600 hover:text-blue-700 px-3 py-2 text-sm font-medium">Courses</a>
+                    <a href="#facilities" class="text-gray-600 hover:text-blue-700 px-3 py-2 text-sm font-medium">Facilities</a>
+                    <a href="#testimonials" class="text-gray-600 hover:text-blue-700 px-3 py-2 text-sm font-medium">Testimonials</a>
+                    <a href="#contact" class="text-gray-600 hover:text-blue-700 px-3 py-2 text-sm font-medium">Contact</a>
+                    <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition duration-300">Apply Now</a>
+                </div>
+                <div class="-mr-2 flex items-center md:hidden">
+                    <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#" class="bg-blue-100 text-blue-700 block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                <a href="#about" class="text-gray-700 hover:bg-gray-100 hover:text-blue-700 block px-3 py-2 rounded-md text-base font-medium">About</a>
+                <a href="#courses" class="text-gray-700 hover:bg-gray-100 hover:text-blue-700 block px-3 py-2 rounded-md text-base font-medium">Courses</a>
+                <a href="#facilities" class="text-gray-700 hover:bg-gray-100 hover:text-blue-700 block px-3 py-2 rounded-md text-base font-medium">Facilities</a>
+                <a href="#testimonials" class="text-gray-700 hover:bg-gray-100 hover:text-blue-700 block px-3 py-2 rounded-md text-base font-medium">Testimonials</a>
+                <a href="#contact" class="text-gray-700 hover:bg-gray-100 hover:text-blue-700 block px-3 py-2 rounded-md text-base font-medium">Contact</a>
+                <a href="#" class="bg-blue-600 text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700">Apply Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">Shape Your Future With <span class="text-yellow-300">GCOM</span></h1>
+                    <p class="text-lg md:text-xl mb-8 opacity-90">Premier technology education with industry-aligned curriculum, expert faculty, and state-of-the-art facilities to launch your tech career.</p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#" class="bg-white text-blue-800 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition duration-300">Explore Courses</a>
+                        <a href="#" class="border-2 border-white hover:bg-white hover:text-blue-800 px-6 py-3 rounded-lg font-semibold transition duration-300">Virtual Tour</a>
+                    </div>
+                    <div class="mt-8 flex items-center space-x-4">
+                        <div class="flex -space-x-2">
+                            <img class="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://randomuser.me/api/portraits/women/12.jpg" alt="">
+                            <img class="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                            <img class="inline-block h-10 w-10 rounded-full ring-2 ring-white" src="https://randomuser.me/api/portraits/women/43.jpg" alt="">
+                        </div>
+                        <p class="text-sm opacity-80">Join 2,500+ successful alumni</p>
+                    </div>
+                </div>
+                <div class="hidden md:block relative">
+                    <img src="https://via.placeholder.com/600x500?text=GCOM+Campus" alt="GCOM Campus" class="rounded-xl shadow-2xl floating-animation">
+                    <div class="absolute -bottom-6 -left-6 bg-white p-4 rounded-lg shadow-lg">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-3">
+                                <i class="fas fa-medal text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Ranked #1</p>
+                                <p class="font-bold text-gray-800">Tech Institute 2023</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="bg-gray-50 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <div class="text-blue-600 text-3xl font-bold mb-2">15+</div>
+                    <div class="text-gray-600">Years Experience</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <div class="text-blue-600 text-3xl font-bold mb-2">2,500+</div>
+                    <div class="text-gray-600">Successful Alumni</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <div class="text-blue-600 text-3xl font-bold mb-2">50+</div>
+                    <div class="text-gray-600">Industry Partners</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <div class="text-blue-600 text-3xl font-bold mb-2">95%</div>
+                    <div class="text-gray-600">Placement Rate</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">About GCOM Institute</h2>
+                <div class="w-20 h-1 bg-blue-600 mx-auto"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-4">Empowering Future Tech Leaders Since 2008</h3>
+                    <p class="text-gray-600 mb-6">GCOM Institute of Technology is a premier institution dedicated to providing cutting-edge education in computer science and information technology. Our mission is to bridge the gap between academia and industry by offering programs that combine theoretical knowledge with practical application.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-600">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-700">Industry-aligned curriculum developed with tech leaders</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-600">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-700">Hands-on learning with real-world projects</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="flex items-center justify-center h-6 w-6 rounded-full bg-blue-100 text-blue-600">
+                                    <i class="fas fa-check text-xs"></i>
+                                </div>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-gray-700">Dedicated placement cell with 95% success rate</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="#" class="mt-8 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-300">
+                        Learn More About Us
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <div class="relative">
+                    <img src="https://via.placeholder.com/600x400?text=GCOM+Campus+Life" alt="GCOM Campus Life" class="rounded-lg shadow-lg w-full">
+                    <div class="absolute -bottom-6 -right-6 bg-white p-6 rounded-lg shadow-lg max-w-xs">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-chalkboard-teacher text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800">Expert Faculty</h4>
+                                <p class="text-sm text-gray-600">Learn from industry veterans and academic experts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section id="courses" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Our Programs</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Comprehensive technology programs designed to launch your career in the digital world</p>
+                <div class="w-20 h-1 bg-blue-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Course Card 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden course-card transition duration-300">
+                    <div class="h-48 bg-blue-600 flex items-center justify-center">
+                        <i class="fas fa-laptop-code text-white text-6xl"></i>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Bachelor's</span>
+                            <span class="ml-2 text-gray-500 text-sm">4 Years</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">B.Tech in Computer Science</h3>
+                        <p class="text-gray-600 mb-4">Comprehensive program covering algorithms, systems design, AI, and software engineering with industry projects.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-blue-600 font-semibold">₹1,20,000/year</span>
+                            <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Learn More →</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Card 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden course-card transition duration-300">
+                    <div class="h-48 bg-purple-600 flex items-center justify-center">
+                        <i class="fas fa-database text-white text-6xl"></i>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">Master's</span>
+                            <span class="ml-2 text-gray-500 text-sm">2 Years</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">M.Tech in Data Science</h3>
+                        <p class="text-gray-600 mb-4">Advanced training in machine learning, big data analytics, and AI with real-world data challenges.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-purple-600 font-semibold">₹1,50,000/year</span>
+                            <a href="#" class="text-purple-600 hover:text-purple-800 font-medium">Learn More →</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Card 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden course-card transition duration-300">
+                    <div class="h-48 bg-green-600 flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-white text-6xl"></i>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Diploma</span>
+                            <span class="ml-2 text-gray-500 text-sm">1 Year</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Cybersecurity Specialist</h3>
+                        <p class="text-gray-600 mb-4">Intensive training in network security, ethical hacking, and digital forensics with certification.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-600 font-semibold">₹75,000/year</span>
+                            <a href="#" class="text-green-600 hover:text-green-800 font-medium">Learn More →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="#" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition duration-300">
+                    View All Programs
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Why Choose GCOM?</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Discover what makes us the preferred choice for tech education</p>
+                <div class="w-20 h-1 bg-blue-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center p-6 rounded-lg hover:bg-gray-50 transition duration-300">
+                    <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-briefcase text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Industry Partnerships</h3>
+                    <p class="text-gray-600">Collaborations with 50+ tech companies for internships and placements</p>
+                </div>
+                
+                <div class="text-center p-6 rounded-lg hover:bg-gray-50 transition duration-300">
+                    <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">95% Placement Rate</h3>
+                    <p class="text-gray-600">Consistent track record of placing students in top tech companies</p>
+                </div>
+                
+                <div class="text-center p-6 rounded-lg hover:bg-gray-50 transition duration-300">
+                    <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-flask text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Advanced Labs</h3>
+                    <p class="text-gray-600">State-of-the-art labs with latest hardware and software</p>
+                </div>
+                
+                <div class="text-center p-6 rounded-lg hover:bg-gray-50 transition duration-300">
+                    <div class="bg-yellow-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-globe text-yellow-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Global Certifications</h3>
+                    <p class="text-gray-600">Opportunity to earn certifications from Microsoft, AWS, and Cisco</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Facilities Section -->
+    <section id="facilities" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Our World-Class Facilities</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">State-of-the-art infrastructure to support your learning journey</p>
+                <div class="w-20 h-1 bg-blue-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <img src="https://via.placeholder.com/800x500?text=Computer+Labs" alt="Computer Labs" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Advanced Computer Labs</h3>
+                        <p class="text-gray-600 mb-4">Our labs are equipped with high-performance workstations, VR setups, and specialized software for AI/ML development, cybersecurity training, and software engineering.</p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Take Virtual Tour →</a>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <img src="https://via.placeholder.com/800x500?text=Library" alt="Library" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Digital Resource Center</h3>
+                        <p class="text-gray-600 mb-4">A modern library with 50,000+ physical volumes, access to IEEE, ACM, and Springer journals, and quiet study spaces with high-speed internet.</p>
+                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">Explore Resources →</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                    <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-wifi text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Campus-wide WiFi</h3>
+                    <p class="text-gray-600">High-speed internet access across the entire campus with enterprise-grade security.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                    <div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-robot text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">AI & Robotics Lab</h3>
+                    <p class="text-gray-600">Specialized lab with humanoid robots, IoT devices, and machine learning workstations.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition duration-300">
+                    <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-utensils text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Food Court</h3>
+                    <p class="text-gray-600">Modern cafeteria serving healthy, hygienic meals with vegetarian and vegan options.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">What Our Students Say</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Hear from our alumni about their GCOM experience</p>
+                <div class="w-20 h-1 bg-blue-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-6 rounded-lg testimonial-card">
+                    <div class="flex items-center mb-4">
+                        <img class="w-12 h-12 rounded-full mr-4" src="https://randomuser.me/api/portraits/women/32.jpg" alt="Sarah K.">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Sarah K.</h4>
+                            <p class="text-sm text-gray-600">B.Tech CSE, 2022</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-4">"The hands-on projects and industry mentorship at GCOM gave me the confidence to land my dream job at Google. The curriculum is perfectly aligned with what tech companies actually need."</p>
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-lg testimonial-card">
+                    <div class="flex items-center mb-4">
+                        <img class="w-12 h-12 rounded-full mr-4" src="https://randomuser.me/api/portraits/men/54.jpg" alt="Raj P.">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Raj P.</h4>
+                            <p class="text-sm text-gray-600">M.Tech Data Science, 2021</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-4">"The faculty at GCOM are exceptional - they don't just teach theory but share real industry experiences. The AI lab facilities rival those at top US universities. I published my first research paper thanks to their guidance."</p>
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-lg testimonial-card">
+                    <div class="flex items-center mb-4">
+                        <img class="w-12 h-12 rounded-full mr-4" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Priya M.">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Priya M.</h4>
+                            <p class="text-sm text-gray-600">Cybersecurity Diploma, 2023</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-4">"The 6-month internship included in the cybersecurity program was a game-changer. I got to work on real penetration testing projects that led directly to my current role at a leading fintech company."</p>
+                    <div class="flex text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Placement Partners Section -->
+    <section class="py-12 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">OUR RECRUITERS</h3>
+                <h2 class="text-2xl font-bold text-gray-900">Placement Partners</h2>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 items-center">
+                <img src="https://via.placeholder.com/150x80?text=Microsoft" alt="Microsoft" class="h-12 object-contain opacity-70 hover:opacity-100 transition duration-300">
+                <img src="https://via.placeholder.com/150x80?text=Google" alt="Google" class="h-12 object-contain opacity-70 hover:opacity-100 transition duration-300">
+                <img src="https://via.placeholder.com/150x80?text=Amazon" alt="Amazon" class="h-12 object-contain opacity-70 hover:opacity-100 transition duration-300">
+                <img src="https://via.placeholder.com/150x80?text=Infosys" alt="Infosys" class="h-12 object-contain opacity-70 hover:opacity-100 transition duration-300">
+                <img src="https://via.placeholder.com/150x80?text=TCS" alt="TCS" class="h-12 object-contain opacity-70 hover:opacity-100 transition duration-300">
+                <img src="https://via.placeholder.com/150x80?text=IBM" alt="IBM" class="h-12 object-contain opacity-70 hover:opacity-100 transition duration-300">
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-blue-700 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold mb-4">Ready to Launch Your Tech Career?</h2>
+                    <p class="text-lg opacity-90 mb-6">Applications for 2024 admissions are now open. Limited seats available in each program.</p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#" class="bg-white text-blue-800 hover:bg-gray-100 px-6 py-3 rounded-lg font-semibold transition duration-300">Apply Now</a>
+                        <a href="#" class="border-2 border-white hover:bg-white hover:text-blue-800 px-6 py-3 rounded-lg font-semibold transition duration-300">Contact Counselor</a>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Upcoming Events</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-md mr-4">
+                                <div class="font-bold text-center">15</div>
+                                <div class="text-xs">JUL</div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Campus Tour Day</h4>
+                                <p class="text-sm text-gray-600">10:00 AM - 4:00 PM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-md mr-4">
+                                <div class="font-bold text-center">22</div>
+                                <div class="text-xs">JUL</div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Tech Career Fair</h4>
+                                <p class="text-sm text-gray-600">9:00 AM - 5:00 PM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-md mr-4">
+                                <div class="font-bold text-center">30</div>
+                                <div class="text-xs">JUL</div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Admission Deadline</h4>
+                                <p class="text-sm text-gray-600">Final date to apply</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Contact Us</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Have questions? Get in touch with our admissions team</p>
+                <div class="w-20 h-1 bg-blue-600 mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Send Us a Message</h3>
+                    <form class="space-y-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" id="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Your name">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="your@email.com">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="+91 9876543210">
+                        </div>
+                        <div>
+                            <label for="course" class="block text-sm font-medium text-gray-700 mb-1">Course Interested In</label>
+                            <select id="course" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Select a program</option>
+                                <option value="btech">B.Tech in Computer Science</option>
+                                <option value="mtech">M.Tech in Data Science</option>
+                                <option value="cyber">Cybersecurity Specialist</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
+                            <textarea id="message" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-300">Send Message</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Contact Information</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-map-marker-alt text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Campus Address</h4>
+                                <p class="text-gray-600">Tech Education Park, Sector 62, Noida, Uttar Pradesh 201309</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-phone-alt text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Phone Numbers</h4>
+                                <p class="text-gray-600">Admissions: +91 98765 43210</p>
+                                <p class="text-gray-600">General Inquiry: +91 98765 43211</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-envelope text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Email Addresses</h4>
+                                <p class="text-gray-600">Admissions: admissions@gcom.edu.in</p>
+                                <p class="text-gray-600">General: info@gcom.edu.in</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-clock text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Working Hours</h4>
+                                <p class="text-gray-600">Monday - Friday: 9:00 AM - 5:00 PM</p>
+                                <p class="text-gray-600">Saturday: 9:00 AM - 1:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h4 class="font-semibold text-gray-900 mb-4">Follow Us</h4>
+                        <div class="flex space-x-4">
+                            <a href="#" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition duration-300">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition duration-300">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition duration-300">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition duration-300">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center text-blue-600 hover:bg-blue-200 transition duration-300">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-4">Campus Location</h4>
+                        <div class="aspect-w-16 aspect-h-9">
+                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3502.380121911028!2d77.3678743150825!3d28.62864438242245!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390ce55a5e7a1a67%3A0x5d9f1e0b2b5e1b1c!2sNoida%20Sector%2062%2C%20Noida%2C%20Uttar%20Pradesh%20201309!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" class="rounded-lg"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white pt-12 pb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">About GCOM</h3>
+                    <p class="text-gray-400 mb-4">GCOM Institute of Technology is a premier institution dedicated to excellence in technical education since 2008.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition duration-300">About Us</a></li>
+                        <li><a href="#courses" class="text-gray-400 hover:text-white transition duration-300">Courses</a></li>
+                        <li><a href="#facilities" class="text-gray-400 hover:text-white transition duration-300">Facilities</a></li>
+                        <li><a href="#testimonials" class="text-gray-400 hover:text-white transition duration-300">Testimonials</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition duration-300">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Programs</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">B.Tech in Computer Science</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">M.Tech in Data Science</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Cybersecurity Specialist</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Artificial Intelligence</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Cloud Computing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition duration-300">Short Term Courses</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest updates and course information.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Your email" class="px-4 py-2 w-full rounded-l-lg focus:outline-none text-gray-800">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-r-lg transition duration-300">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm mb-4 md:mb-0">© 2023 GCOM Institute of Technology. All rights reserved.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition duration-300">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition duration-300">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition duration-300">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-6 right-6 bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition duration-300 opacity-0 invisible">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // Back to top button
+        const backToTopButton = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+
+        backToTopButton.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
