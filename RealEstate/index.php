@@ -1,5 +1,6 @@
 <?php
-include('./includes/header.php')
+include('./includes/header.php');
+include('./Database/connection.php')
 ?>
 
     <!-- header for project -->
