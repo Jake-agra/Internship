@@ -3,15 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="bootstrap-5.3.7-dist/css/bootstrap.css">
     <title>Assignment</title>
+    <style>
+        .btn-hover{
+            background-color: lightblue;
+            color: blue;
+            border: 2px solid aqua;
+            border-radius:20px;
+        }
+.btn-hover:hover{
+    background-color: lightcoral;
+    color: red;
+    border: 2px solid red;
+}
+.input-box:active{
+    border: 5px solid green;
+    color: blue;
+}
+.btn-hover-2:hover{
+    background-color: limegreen;
+}
+    </style>
 </head>
-<body>
-    <ol>
+<body class="body">
+    <input type="text" class="pc-input-box">
+    <br>
+    <button class="btn-hover"> Home button </button>
+    <button class="btn-hover-2"> Home button </button>
+    <!-- <ol>
         <li><a href="#">Home</a></li>
         <li></li>
         <li></li>
         <li></li>
-    </ol>
-    
+    </ol> -->
 </body>
 </html>

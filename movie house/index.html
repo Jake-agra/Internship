@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieArena - Watch Latest Movies</title>
+    <link rel="stylesheet" href="/bootstrap-5.3.7-dist/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background-color: #222;
+            padding: 15px;
+        }
+
+        .navbar-brand span {
+            color: red;
+        }
+
+        .search-box input {
+            background-color: #333;
+            border: none;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .movie-card {
+            background-color: #222;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: auto;
+        }
+
+        .hero {
+            position: relative;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        .hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-content {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .footer {
+            background-color: #222;
+            padding: 30px;
+            color: #aaa;
+            text-align: center;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-film text-danger"></i> Movie<span>Arena</span></a>
+            <div class="d-flex ms-auto align-items-center">
+                <form class="d-flex search-box me-3">
+                    <input type="search" placeholder="Search for movies...">
+                </form>
+                <a href="loginUs.html" class="btn btn-danger">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <img src="https://image.tmdb.org/t/p/original/9dKCd55IuTT5QRs989m9Qlb7d8B.jpg" alt="Featured Movie">
+            <div class="hero-content">
+                <h2>Spider-Man: Across the Spider-Verse</h2>
+                <p>Miles Morales catapults across the Multiverse...</p>
+                <button class="btn btn-danger">Watch Now</button>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <button class="category-btn">Popular</button>
+            <button class="category-btn">Top Rated</button>
+            <button class="category-btn">Upcoming</button>
+            <button class="category-btn">Now Playing</button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" alt="Movie">
+                    <div class="p-3">
+                        <h5>Spider-Man</h5>
+                        <p>2023</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg" alt="The Flash">
+                    <div class="p-3">
+                        <h5>The Flash</h5>
+                        <p>2023</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/gPbM0MK8CP8A174rmUwGsADNYKD.jpg" alt="Transformers">
+                    <div class="p-3">
+                        <h5>Transformers</h5>
+                        <p>2023</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg" alt="Mario Bros">
+                    <div class="p-3">
+                        <h5>Mario Bros</h5>
+                        <p>2023</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 MovieArena. All rights reserved.</p>
+        <div>
+            <a href="#" class="text-decoration-none text-light mx-2">Home</a>
+            <a href="seriesPage.html" class="text-decoration-none text-light mx-2">TV Series</a>
+            <a href="aboutUs.html" class="text-decoration-none text-light mx-2">About</a>
+            <a href="contactUs.html" class="text-decoration-none text-light mx-2">Contact</a>
+            <a href="loginUs.html" class="text-decoration-none text-light mx-2">Login</a>
+        </div>
+        <div class="mt-3">
+            <a href="#" class="text-decoration-none text-light mx-2"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="text-decoration-none text-light mx-2"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-decoration-none text-light mx-2"><i class="fab fa-instagram"></i></a>
+        </div>
+    </footer>
+</body>
+</html>

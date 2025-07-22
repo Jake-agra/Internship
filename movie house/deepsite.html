@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieArena - Watch Latest Movies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/bootstrap-5.3.7-dist/css/bootstrap.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom CSS for transitions and animations */
+        .movie-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal-content {
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal:not(.active) .modal-content {
+            transform: translateY(50px);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1a202c;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+        
+        /* Loading animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Header/Navbar -->
+    <header class="bg-gray-800 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-film text-red-500 text-2xl"></i>
+                <h1 class="text-xl font-bold">Movie<span class="text-red-500">Arena</span></h1>
+            </div>
+            
+            <div class="relative w-1/2">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Search for movies..." 
+                    class="w-full bg-gray-700 rounded-full py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button id="favorites-btn" class="text-gray-300 hover:text-red-500 transition">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <button id="login-btn" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded-full transition">
+                    Login
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="relative rounded-xl overflow-hidden mb-10 h-96">
+            <div class="absolute inset-0 bg-gradient-to-r from-gray-900 to-transparent z-10"></div>
+            <img 
+                src="https://image.tmdb.org/t/p/original/9dKCd55IuTT5QRs989m9Qlb7d8B.jpg" 
+                alt="Featured Movie" 
+                class="w-full h-full object-cover"
+            >
+            <div class="absolute bottom-0 left-0 z-20 p-8 max-w-2xl">
+                <h2 class="text-4xl font-bold mb-2">Spider-Man: Across the Spider-Verse</h2>
+                <div class="flex items-center space-x-4 mb-4">
+                    <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">2023</span>
+                    <span class="text-gray-300"><i class="fas fa-star text-yellow-400"></i> 8.9</span>
+                    <span class="text-gray-300">2h 20m</span>
+                </div>
+                <p class="text-gray-300 mb-4">
+                    Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People charged with protecting its very existence. When the heroes clash on how to handle a new threat, Miles must redefine what it means to be a hero.
+                </p>
+                <button class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full font-medium transition flex items-center space-x-2">
+                    <i class="fas fa-play"></i>
+                    <span>Watch Now</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Categories Navigation -->
+        <div class="flex overflow-x-auto pb-4 mb-6 scrollbar-hide space-x-4">
+            <button class="category-btn px-4 py-2 bg-red-600 rounded-full whitespace-nowrap" data-category="popular">Popular</button>
+            <button class="category-btn px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full whitespace-nowrap" data-category="top_rated">Top Rated</button>
+            <button class="category-btn px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full whitespace-nowrap" data-category="upcoming">Upcoming</button>
+            <button class="category-btn px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full whitespace-nowrap" data-category="now_playing">Now Playing</button>
+        </div>
+
+        <!-- Movies Grid -->
+        <section id="movies-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <!-- Movie cards will be inserted here by JavaScript -->
+        </section>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="flex justify-center items-center py-10 hidden">
+            <div class="loading-spinner border-4 border-gray-300 border-t-red-500 rounded-full w-12 h-12"></div>
+        </div>
+
+        <!-- Load More Button -->
+        <div class="flex justify-center mt-8">
+            <button id="load-more-btn" class="bg-gray-800 hover:bg-gray-700 px-6 py-2 rounded-full font-medium transition">
+                Load More
+            </button>
+        </div>
+    </main>
+
+    <!-- Movie Details Modal -->
+    <div id="movie-modal" class="modal fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 opacity-0 invisible transition">
+        <div class="modal-content bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal content will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4 opacity-0 invisible transition">
+        <div class="modal-content bg-gray-800 rounded-xl max-w-md w-full p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Login</h2>
+                <button id="close-login-modal" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="email" class="block mb-2">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="w-full bg-gray-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        required
+                    >
+                </div>
+                
+                <div>
+                    <label for="password" class="block mb-2">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="w-full bg-gray-700 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        required
+                    >
+                </div>
+                
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded font-medium transition">
+                    Login
+                </button>
+            </form>
+            
+            <div class="mt-4 text-center text-gray-400">
+                Don't have an account? <a href="#" class="text-red-500 hover:underline">Sign up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <i class="fas fa-film text-red-500 text-2xl"></i>
+                    <h2 class="text-xl font-bold">Movie<span class="text-red-500">Box</span></h2>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Home</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Movies</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">TV Shows</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">About</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Contact</a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">© 2023 MovieBox. All rights reserved.</p>
+                
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample movie data (in a real app, you would fetch this from an API)
+        const sampleMovies = [
+            {
+                id: 1,
+                title: "Spider-Man: Across the Spider-Verse",
+                poster_path: "https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg",
+                vote_average: 8.9,
+                release_date: "2023-06-02",
+                overview: "Miles Morales catapults across the Multiverse, where he encounters a team of Spider-People charged with protecting its very existence."
+            },
+            {
+                id: 2,
+                title: "The Flash",
+                poster_path: "https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg",
+                vote_average: 7.0,
+                release_date: "2023-06-16",
+                overview: "When his attempt to save his family inadvertently alters the future, Barry Allen becomes trapped in a reality in which General Zod has returned."
+            },
+            {
+                id: 3,
+                title: "Transformers: Rise of the Beasts",
+                poster_path: "https://image.tmdb.org/t/p/w500/gPbM0MK8CP8A174rmUwGsADNYKD.jpg",
+                vote_average: 7.5,
+                release_date: "2023-06-09",
+                overview: "Optimus Prime and the Autobots take on their biggest challenge yet. When a new threat capable of destroying the entire planet emerges."
+            },
+            {
+                id: 4,
+                title: "Guardians of the Galaxy Vol. 3",
+                poster_path: "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg",
+                vote_average: 8.2,
+                release_date: "2023-05-05",
+                overview: "Peter Quill, still reeling from the loss of Gamora, must rally his team around him to defend the universe along with protecting one of their own."
+            },
+            {
+                id: 5,
+                title: "Fast X",
+                poster_path: "https://image.tmdb.org/t/p/w500/fiVW06jE7z9YnO4trhaMEdclSiC.jpg",
+                vote_average: 7.3,
+                release_date: "2023-05-19",
+                overview: "Over many missions and against impossible odds, Dom Toretto and his family have outsmarted and outdriven every foe in their path."
+            },
+            {
+                id: 6,
+                title: "The Little Mermaid",
+                poster_path: "https://image.tmdb.org/t/p/w500/ym1dxyOk4jFcSl4Q2zmRrA5BEEN.jpg",
+                vote_average: 6.5,
+                release_date: "2023-05-26",
+                overview: "The youngest of King Triton's daughters, Ariel is a beautiful and spirited young mermaid with a thirst for adventure."
+            },
+            {
+                id: 7,
+                title: "John Wick: Chapter 4",
+                poster_path: "https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg",
+                vote_average: 7.8,
+                release_date: "2023-03-24",
+                overview: "With the price on his head ever increasing, John Wick uncovers a path to defeating The High Table. But before he can earn his freedom."
+            },
+            {
+                id: 8,
+                title: "Avatar: The Way of Water",
+                poster_path: "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg",
+                vote_average: 7.7,
+                release_date: "2022-12-16",
+                overview: "Jake Sully lives with his newfound family formed on the planet of Pandora. Once a familiar threat returns to finish what was previously started."
+            },
+            {
+                id: 9,
+                title: "Ant-Man and the Wasp: Quantumania",
+                poster_path: "https://image.tmdb.org/t/p/w500/qnqGbB22YJ7dSs4o6M7exTpNxPz.jpg",
+                vote_average: 6.5,
+                release_date: "2023-02-17",
+                overview: "Super-Hero partners Scott Lang and Hope van Dyne are dragged into the Quantum Realm, along with Hope's parents and Scott's daughter Cassie."
+            },
+            {
+                id: 10,
+                title: "The Super Mario Bros. Movie",
+                poster_path: "https://image.tmdb.org/t/p/w500/qNBAXBIQlnOThrVvA6mA2B5ggV6.jpg",
+                vote_average: 7.8,
+                release_date: "2023-04-05",
+                overview: "While working underground to fix a water main, Brooklyn plumbers—and brothers—Mario and Luigi are transported down a mysterious pipe."
+            }
+        ];
+
+        // DOM Elements
+        const moviesContainer = document.getElementById('movies-container');
+        const searchInput = document.getElementById('search-input');
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const movieModal = document.getElementById('movie-modal');
+        const loginModal = document.getElementById('login-modal');
+        const loginBtn = document.getElementById('login-btn');
+        const closeLoginModal = document.getElementById('close-login-modal');
+        const loginForm = document.getElementById('login-form');
+        const favoritesBtn = document.getElementById('favorites-btn');
+        const loadingSpinner = document.getElementById('loading-spinner');
+
+        // State
+        let currentMovies = [...sampleMovies];
+        let currentCategory = 'popular';
+        let currentPage = 1;
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+        // Initialize the app
+        function init() {
+            renderMovies(currentMovies);
+            setupEventListeners();
+        }
+
+        // Render movies to the DOM
+        function renderMovies(movies) {
+            moviesContainer.innerHTML = '';
+            
+            movies.forEach(movie => {
+                const isFavorite = favorites.includes(movie.id);
+                
+                const movieCard = document.createElement('div');
+                movieCard.className = 'movie-card bg-gray-800 rounded-lg overflow-hidden cursor-pointer';
+                movieCard.innerHTML = `
+                    <div class="relative">
+                        <img 
+                            src="${movie.poster_path}" 
+                            alt="${movie.title}" 
+                            class="w-full h-64 sm:h-80 object-cover"
+                        >
+                        <div class="absolute top-2 right-2 bg-black bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center">
+                            <span class="text-white font-bold">${movie.vote_average.toFixed(1)}</span>
+                        </div>
+                        <button class="favorite-btn absolute top-2 left-2 bg-black bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center text-xl ${isFavorite ? 'text-red-500' : 'text-gray-300'}">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold mb-1 truncate">${movie.title}</h3>
+                        <p class="text-gray-400 text-sm">${movie.release_date.split('-')[0]}</p>
+                    </div>
+                `;
+                
+                movieCard.addEventListener('click', () => openMovieModal(movie));
+                
+                // Add favorite button event
+                const favoriteBtn = movieCard.querySelector('.favorite-btn');
+                favoriteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(movie.id, favoriteBtn);
+                });
+                
+                moviesContainer.appendChild(movieCard);
+            });
+        }
+
+        // Open movie modal
+        function openMovieModal(movie) {
+            const isFavorite = favorites.includes(movie.id);
+            
+            movieModal.querySelector('.modal-content').innerHTML = `
+                <div class="relative">
+                    <button id="close-movie-modal" class="absolute top-4 right-4 bg-gray-900 bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    
+                    <div class="relative h-64 sm:h-96">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent z-10"></div>
+                        <img 
+                            src="${movie.poster_path.replace('/w500', '/original')}" 
+                            alt="${movie.title}" 
+                            class="w-full h-full object-cover"
+                        >
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+                            <h2 class="text-2xl font-bold mb-2 sm:mb-0">${movie.title}</h2>
+                            <div class="flex items-center space-x-4">
+                                <span class="bg-red-500 text-white px-2 py-1 rounded text-sm">${movie.release_date.split('-')[0]}</span>
+                                <span class="text-gray-300"><i class="fas fa-star text-yellow-400"></i> ${movie.vote_average.toFixed(1)}</span>
+                                <button id="modal-favorite-btn" class="text-xl ${isFavorite ? 'text-red-500' : 'text-gray-300'}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold mb-2">Overview</h3>
+                            <p class="text-gray-300">${movie.overview}</p>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <button class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full font-medium transition flex items-center space-x-2">
+                                <i class="fas fa-play"></i>
+                                <span>Watch Now</span>
+                            </button>
+                            <button class="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-full font-medium transition flex items-center space-x-2">
+                                <i class="fas fa-plus"></i>
+                                <span>Add to List</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners for modal buttons
+            const closeModalBtn = movieModal.querySelector('#close-movie-modal');
+            closeModalBtn.addEventListener('click', closeMovieModal);
+            
+            const modalFavoriteBtn = movieModal.querySelector('#modal-favorite-btn');
+            modalFavoriteBtn.addEventListener('click', () => {
+                toggleFavorite(movie.id, modalFavoriteBtn);
+            });
+            
+            // Show modal
+            movieModal.classList.add('active');
+            movieModal.classList.remove('opacity-0', 'invisible');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close movie modal
+        function closeMovieModal() {
+            movieModal.classList.remove('active');
+            movieModal.classList.add('opacity-0', 'invisible');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Toggle favorite status
+        function toggleFavorite(movieId, buttonElement) {
+            const index = favorites.indexOf(movieId);
+            
+            if (index === -1) {
+                favorites.push(movieId);
+                if (buttonElement) {
+                    buttonElement.classList.add('text-red-500');
+                    buttonElement.classList.remove('text-gray-300');
+                }
+            } else {
+                favorites.splice(index, 1);
+                if (buttonElement) {
+                    buttonElement.classList.add('text-gray-300');
+                    buttonElement.classList.remove('text-red-500');
+                }
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // Filter movies by search term
+        function searchMovies(term) {
+            if (term.trim() === '') {
+                renderMovies(currentMovies);
+                return;
+            }
+            
+            const filteredMovies = currentMovies.filter(movie => 
+                movie.title.toLowerCase().includes(term.toLowerCase())
+            );
+            
+            renderMovies(filteredMovies);
+        }
+
+        // Change category
+        function changeCategory(category) {
+            currentCategory = category;
+            currentPage = 1;
+            
+            // In a real app, you would fetch movies for this category from an API
+            // For now, we'll just use our sample movies
+            currentMovies = [...sampleMovies];
+            
+            // Update active category button
+            categoryButtons.forEach(btn => {
+                if (btn.dataset.category === category) {
+                    btn.classList.add('bg-red-600');
+                    btn.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+                } else {
+                    btn.classList.remove('bg-red-600');
+                    btn.classList.add('bg-gray-800', 'hover:bg-gray-700');
+                }
+            });
+            
+            renderMovies(currentMovies);
+        }
+
+        // Simulate loading more movies
+        function loadMoreMovies() {
+            loadingSpinner.classList.remove('hidden');
+            loadMoreBtn.disabled = true;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // In a real app, you would fetch the next page of movies from an API
+                // For now, we'll just duplicate our sample movies to simulate more content
+                const moreMovies = [...sampleMovies].map(movie => ({
+                    ...movie,
+                    id: movie.id + (currentPage * 10) // Make sure IDs are unique
+                }));
+                
+                currentMovies = [...currentMovies, ...moreMovies];
+                currentPage++;
+                
+                renderMovies(currentMovies);
+                loadingSpinner.classList.add('hidden');
+                loadMoreBtn.disabled = false;
+            }, 1000);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            searchInput.addEventListener('input', (e) => {
+                searchMovies(e.target.value);
+            });
+            
+            // Category buttons
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    changeCategory(btn.dataset.category);
+                });
+            });
+            
+            // Load more button
+            loadMoreBtn.addEventListener('click', loadMoreMovies);
+            
+            // Login modal
+            loginBtn.addEventListener('click', () => {
+                loginModal.classList.add('active');
+                loginModal.classList.remove('opacity-0', 'invisible');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeLoginModal.addEventListener('click', () => {
+                loginModal.classList.remove('active');
+                loginModal.classList.add('opacity-0', 'invisible');
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Login form
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                // In a real app, you would validate and send to a server
+                alert(`Login attempt with email: ${email}`);
+                
+                // Close modal
+                loginModal.classList.remove('active');
+                loginModal.classList.add('opacity-0', 'invisible');
+                document.body.style.overflow = 'auto';
+            });
+            
+            // Favorites button
+            favoritesBtn.addEventListener('click', () => {
+                const favoriteMovies = currentMovies.filter(movie => 
+                    favorites.includes(movie.id)
+                );
+                
+                if (favoriteMovies.length > 0) {
+                    renderMovies(favoriteMovies);
+                } else {
+                    alert('You have no favorite movies yet!');
+                }
+            });
+            
+            // Close modals when clicking outside
+            [movieModal, loginModal].forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                        modal.classList.add('opacity-0', 'invisible');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            });
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
