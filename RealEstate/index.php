@@ -16,6 +16,8 @@ include('./Database/connection.php')
                         <li><a href="#Land">Land</a></li>
                         <li><a href="#About">About</a></li>
                         <li><a href="#Contact">Contact Us</a></li>
+
+                        <a href="register.php" class="btn">Register Now!</a>
                     </ul>
                 </nav>
             </div>

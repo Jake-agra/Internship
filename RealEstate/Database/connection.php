@@ -12,7 +12,8 @@ $conn = mysqli_connect($dbhost, $dbuser, $dbpassword, database: $dbname);
 if (mysqli_connect_errno()) {
     die('Sorry your database was dropped'. mysqli_connect_error());
 } else{
-    echo'Database successful';
+    // echo'Database successful';
 }
+
 
 ?>

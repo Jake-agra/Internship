@@ -1,5 +1,131 @@
 *{
-    padding:0;
+    padding: 0;
     margin: 0;
     box-sizing: border-box;
+    line-height: 1.6;
 }
+header{
+    background: linear-gradient(135deg,#0373e2,#343434);
+    color: white;
+    padding: 1rem 0;
+    /* background-image: url("images/1.jpeg"); */
+    background-size: cover;
+    height: 70px;
+   }
+.house-container{
+    padding: 0 20px;
+    margin: 0 auto;
+}
+
+.logo{
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+nav ul{
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    margin-top: -2rem;
+    align-items: center;
+    justify-content: center;
+
+}
+nav a{
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+
+}
+nav a:hover{
+    color: red;
+}
+.btn{
+    background-color: rgb(185,187,169);
+    padding: 12px 30px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0,4s;
+    border-radius: 10px;
+    margin-left: 10rem;
+
+}
+
+
+/* Register css */
+    {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 16px;
+    }
+
+    .form-group input:focus {
+      border-color: #007bff;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .bottom-text {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .bottom-text a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .bottom-text a:hover {
+      text-decoration: underline;
+    }
