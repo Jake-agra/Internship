@@ -5,7 +5,7 @@ include('./includes/header.php');
 include('./Database/connection.php')
 ?>
 
-
+<div class="body">
   <div class="login-box">
     <h2>Login</h2>
     <form action="login.php" method="post">
@@ -23,4 +23,5 @@ include('./Database/connection.php')
       </div>
     </form>
   </div>
+</div>
 

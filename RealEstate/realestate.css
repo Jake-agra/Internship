@@ -1,33 +1,51 @@
 *{
-    padding: 0;
-    margin: 0;
+    padding: 0%;
+    margin: 4px;
     box-sizing: border-box;
     line-height: 1.6;
+    border-radius: 12px;
 }
 header{
     background: linear-gradient(135deg,#0373e2,#343434);
     color: white;
     padding: 1rem 0;
-    /* background-image: url("images/1.jpeg"); */
+    background-image: url("images/1.jpeg");
+    height: 700px;
+    width: 100%;
+    background-repeat: no-repeat;
     background-size: cover;
-    height: 70px;
+    background-position: 60% 40%;
    }
 .house-container{
+    background-color: #333;
     padding: 0 20px;
     margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .logo{
     font-size: 1.8rem;
     font-weight: bold;
 }
+nav{
+    /* background-color: #333; */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
 nav ul{
     list-style: none;
     display: flex;
-    gap: 2rem;
+    gap: 4rem;
     margin-top: -2rem;
     align-items: center;
-    justify-content: center;
+    margin: 0%;
+    padding: 0%;
+    margin-right: 250px;
+    justify-content: center
 
 }
 nav a{
@@ -40,25 +58,27 @@ nav a:hover{
     color: red;
 }
 .btn{
-    background-color: rgb(185,187,169);
+    background-color: rgb(24, 24, 24);
     padding: 12px 30px;
     text-decoration: none;
     font-size: 1rem;
-    transition: color 0,4s;
-    border-radius: 10px;
-    margin-left: 10rem;
+    color: #ffffff;
+    /* transition: color 0,4s; */
+    border-radius: 20px;
+    margin-left: auto;
+    display: inline-block;
 
 }
 
 
-/* Register css */
-    {
+/* Register & login  css */
+    .body{
       font-family: Arial, sans-serif;
       background: #f0f2f5;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      height: 800px;
       margin: 0;
     }
 

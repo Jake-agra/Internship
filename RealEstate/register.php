@@ -2,9 +2,46 @@
 error_reporting(error_level:E_ALL);
 ini_set("display_error ",1);
 include('./includes/header.php');
-include('./Database/connection.php')
-?>
+include('./Database/connection.php');
 
+
+// get connections to the database
+
+if($_SERVER['REQUEST_METHOD'] == 'POST'){
+    $fname = trim(string:$_POST['fname']);
+    $lname = trim(string:$_POST['lname']);
+    $email = trim(string:$_POST['email']);
+    $phonenumber = trim(string:$_POST['phonenumber']);
+    $password = password_hash(password: $_POST['pass'],algo:PASSWORD_DEFAULT);
+
+    // Check for existing user in the database
+
+    $check=$conn->prepare("SELECT user_id FROM users WHERE email=?");
+    $check->bind_param(types:"sssss".$email);
+    $check->execute();
+    $check->store_result();
+
+
+    // check if the user is available not from the above query
+
+    if($check->num_rows > 0){
+        echo"The email you entered already exist";
+    } else{
+        $stmt = $conn->prepare("INSERT INTO users (fname,lname,phonenumber,email,pass) VALUES(?, ?, ?, ?, ?)");
+        $stmt->bind_param( "sssss", $fname, $lname, $phonenumber,$email,$password);
+
+
+        if($stmt->bind_param()){
+            echo"Registration is Successful!";
+
+            //windows.href
+    } else{
+        echo" Try Creating a New Account, Something Failed", $stmt->error;
+    }
+}
+}
+?>
+<div class="body">
   <div class="login-box">
     <h2>Register an Account </h2>
     <form action="register.php" method="post">
@@ -37,7 +74,7 @@ include('./Database/connection.php')
       <!-- password -->
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" required />
+        <input type="password" id="pass" name="pass" required />
       </div>
 
 
@@ -49,4 +86,4 @@ include('./Database/connection.php')
       </div>
     </form>
   </div>
-
+</div>
