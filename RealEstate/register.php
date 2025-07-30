@@ -8,16 +8,16 @@ include('./Database/connection.php');
 // get connections to the database
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    $fname = trim(string:$_POST['fname']);
+    $fname = trim(string:$_POST['fnam']);
     $lname = trim(string:$_POST['lname']);
     $email = trim(string:$_POST['email']);
-    $phonenumber = trim(string:$_POST['phonenumber']);
-    $password = password_hash(password: $_POST['pass'],algo:PASSWORD_DEFAULT);
+    $phonenumber = trim(string:$_POST['phonenum']);
+    $pass = password_hash(password: $_POST['pass'],algo:PASSWORD_DEFAULT);
 
     // Check for existing user in the database
 
     $check=$conn->prepare("SELECT user_id FROM users WHERE email=?");
-    $check->bind_param(types:"sssss".$email);
+    $check->bind_param("s",$email);
     $check->execute();
     $check->store_result();
 
@@ -27,11 +27,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     if($check->num_rows > 0){
         echo"The email you entered already exist";
     } else{
-        $stmt = $conn->prepare("INSERT INTO users (fname,lname,phonenumber,email,pass) VALUES(?, ?, ?, ?, ?)");
-        $stmt->bind_param( "sssss", $fname, $lname, $phonenumber,$email,$password);
+        $stmt = $conn->prepare("INSERT INTO users (fnam,lname,phonenum,email,pass) VALUES(?, ?, ?, ?, ?)");
+        $stmt->bind_param( "sssss", $fname, $lname, $phonenumber, $email,$pass);
 
 
-        if($stmt->bind_param()){
+        if($stmt->execute()){
             echo"Registration is Successful!";
 
             //windows.href
@@ -50,7 +50,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
       <div class="form-group">
         <label for="username">First name</label>
-        <input type="text" id="fname" name="fname" required />
+        <input type="text" id="fnam" name="fnam" required />
       </div>
 
       <!-- ln username -->
@@ -68,7 +68,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
       <!-- phone -->
        <div class="form-group">
         <label for="phonenumber">Phone number </label>
-        <input type="tel" id="phonenumber" name="phonenumber" required />
+        <input type="tel" id="phonenum" name="phonenum" required />
       </div>
        
       <!-- password -->
