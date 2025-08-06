@@ -236,14 +236,18 @@ list-style: none;
 display: flex;
 gap: 2rem;
 margin-top: -2rem;
-  align-items: center;
+align-items: center;
     justify-content: center;
 }
 
 nav a{
-    color: white;
+    color: black;
     text-decoration: none;
     transition: color 0.3s;
+    margin-top: 2rem;
+    
+    align-items: right;
+    justify-content: right;
 }
 
 
