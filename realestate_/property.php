@@ -10,8 +10,11 @@ JOIN prices pr ON p.price_id=pr.id
 JOIN locations l ON p.location_id=l.id
 JOIN property_types pt ON p.property_type_id=pt.id
 WHERE p.status='available' ";
-
 ?>
+
+<!-- adding a search condition -->
+
+$params = array();
 
 <div class="search-filter-section">
     <div class="container">.

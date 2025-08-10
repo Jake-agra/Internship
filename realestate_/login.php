@@ -34,7 +34,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                 $_SESSION['role_id'] = $role_id;
                 $_SESSION['user_type'] = $role_name; // Keep for backward compatibility
                 $_SESSION['logged_in'] = true;
-                
+            
                 // Redirect to dashboard
                 header("Location: index.php");
                 exit();
