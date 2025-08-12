@@ -10,7 +10,70 @@ JOIN prices pr ON p.price_id=pr.id
 JOIN locations l ON p.location_id=l.id
 JOIN property_types pt ON p.property_type_id=pt.id
 WHERE p.status='available' ";
+
+// <!-- if not showing all feature, only get the featured properties-->
+
+if(!$show_all){
+    $query.= "AND p.is_featured=1";
+}
+
+// add sorting and  filtering condition i provided
+$query.= "ORDER BY p.created_at DESC";
+
+
+//if we get all search, let limit to only 6 properties
+if(!$show_all){
+    $query.= " LIMIT 6";
+}   
+
+
+// Execute the query
+
+$result = $conn->query($query);
+if($result){
+    while($row = $result->fetch_assoc()){
+           // process each row
+        $featured_properties[] = $row;
+    }
+}
+
+// get propety statistics 
+$stat=[
+
+    'total_properties' => 0,
+    'available_properties' => 0,
+    'sold_properties' => 0,
+    'avg_price' => 0
+];
+
+    // get properties count
+    $count_query=$conn->query("SELECT  
+    COUNT(*) as total_properties,
+    SUM(CASE WHEN status='available' THEN 1 ELSE 0 END) as available_properties,
+    SUM(CASE WHEN status='sold' THEN 1 ELSE 0 END) as sold_properties
+    FROM properties");
+
+
+   if($count_query){
+    $stats=array_merge($stats,$count_query->fetch_assoc());
+    $count_query->free();
+}
+
+
+// calculate average price
+$count_query=$conn->query("SELECT AVG(pr.amount) as avg_price FROM properties p
+JOIN prices pr ON p.price_id=pr.id"
+);
+
+if($price_query){
+    $price_data=$price_query->fetch_assoc();
+    if($price_data ['avg_price']=round($price_data['avg_price'], 2));
+    $price_query->free();
+}
+
 ?>
+
+
 
 <!-- adding a search condition -->
 
