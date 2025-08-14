@@ -15,7 +15,7 @@ include('./Database/connection.php');
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
         <li class="nav-item"> <a class="nav-link active" href="#Home">Home</a></li>
-        <li class="nav-item"> <a class="nav-link" href="#Properties">Properties</a></li>
+        <li class="nav-item"> <a class="nav-link" href="property.php">Properties</a></li>
         <li class="nav-item"> <a class="nav-link" href="#About">About</a></li>
         <li class="nav-item"> <a class="nav-link" href="#Contact">Contact</a></li>
       </ul>
@@ -29,7 +29,7 @@ include('./Database/connection.php');
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li><a class="dropdown-item" href="profile.php"><i class="fa fa-user me-2"></i> My Profile</a></li>
-              <li><a class="dropdown-item" href="properties.php"><i class="fa fa-home me-2"></i> Properties</a></li>
+              <li><a class="dropdown-item" href="property.php"><i class="fa fa-home me-2"></i> Properties</a></li>
               <li><a class="dropdown-item" href="bookmarks.php"><i class="fa fa-bookmark me-2"></i> Bookmarks</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item text-danger" href="logout.php"><i class="fa fa-sign-out me-2"></i> Logout</a></li>

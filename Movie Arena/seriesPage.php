@@ -1,0 +1,236 @@
+<?php
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Series - MovieArena</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header id="header">
+        <div class="header-content">
+            <h1><i class="fas fa-film"></i> MovieArena</h1>
+            <nav>
+                <a href="index.php">Home</a>
+                <a href="seriesPage.php">TV Series</a>
+                <a href="aboutUs.php">About</a>
+                <a href="contactUs.php">Contact</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="dashboard.php">Dashboard</a>
+                    <a href="logout.php" class="logout-btn">Logout</a>
+                <?php else: ?>
+                    <a href="login.php" class="login-btn">Login</a>
+                    <a href="register.php" class="register-btn">Sign Up</a>
+                <?php endif; ?>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero series-hero">
+        <div class="hero-content">
+            <h2>Binge-worthy TV Series</h2>
+            <p>Discover amazing stories, unforgettable characters, and endless entertainment</p>
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <a href="dashboard.php">Start Watching <i class="fas fa-arrow-right"></i></a>
+            <?php else: ?>
+                <a href="login.php">Start Watching <i class="fas fa-arrow-right"></i></a>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <div class="movies-section">
+        <div class="container">
+            <h2 class="section-title">Popular TV Series</h2>
+            <div class="movies">
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/4BX8YyxKpPGGgx66DVU3XyXhaIb.jpg" alt="Stranger Things">
+                    <div class="movie-info">
+                        <h3>Stranger Things</h3>
+                        <p>A group of young friends witness supernatural forces and secret government exploits...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/pIGK7H1KebU2xjGDAPuKQrYIskH.jpg" alt="The Witcher">
+                    <div class="movie-info">
+                        <h3>The Witcher</h3>
+                        <p>Geralt of Rivia, a solitary monster hunter, struggles to find his place in a world...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/qJxzjUjCpTPvDHldNnlbRC4OqEH.jpg" alt="Game of Thrones">
+                    <div class="movie-info">
+                        <h3>Game of Thrones</h3>
+                        <p>Nine noble families wage war against each other to gain control over the mythical land of Westeros...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/rn7F8Af8sMiYc7MksLAF8jvVdaP.jpg" alt="Breaking Bad">
+                    <div class="movie-info">
+                        <h3>Breaking Bad</h3>
+                        <p>A chemistry teacher diagnosed with cancer turns to manufacturing and selling methamphetamine...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg" alt="The Mandalorian">
+                    <div class="movie-info">
+                        <h3>The Mandalorian</h3>
+                        <p>The travels of a lone bounty hunter in the outer reaches of the galaxy, far from the authority of the New Republic...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61L8kuCQ9rXf6.jpg" alt="The Crown">
+                    <div class="movie-info">
+                        <h3>The Crown</h3>
+                        <p>The story of Queen Elizabeth II and the events that shaped the second half of the twentieth century...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/6POBWybSBDBKjSs1VAQcnQC1qyt.jpg" alt="The Boys">
+                    <div class="movie-info">
+                        <h3>The Boys</h3>
+                        <p>A group of vigilantes set out to take down corrupt superheroes who abuse their superpowers...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/9PqD3wSIjntyJDBzMNuxuKHwpUD.jpg" alt="Wednesday">
+                    <div class="movie-info">
+                        <h3>Wednesday</h3>
+                        <p>Intelligent, sarcastic and a bit dead inside, Wednesday Addams investigates a murder spree while making new friends...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="index.php">Home</a>
+                <a href="seriesPage.php">TV Series</a>
+                <a href="aboutUs.php">About Us</a>
+                <a href="contactUs.php">Contact</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="dashboard.php">Dashboard</a>
+                <?php else: ?>
+                    <a href="login.php">Login</a>
+                    <a href="register.php">Register</a>
+                <?php endif; ?>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>&copy; 2025 MovieArena. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Play button functionality
+        document.querySelectorAll('.play-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const movieCard = this.closest('.movie-card');
+                const movieTitle = movieCard.querySelector('h3').textContent;
+                alert(`Playing: ${movieTitle}`);
+                // Here you would typically redirect to a video player page
+            });
+        });
+
+        // Save button functionality
+        document.querySelectorAll('.save-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const movieCard = this.closest('.movie-card');
+                const movieTitle = movieCard.querySelector('h3').textContent;
+                alert(`Added to favorites: ${movieTitle}`);
+                // Here you would typically save to favorites
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -4,113 +4,217 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV Series - MovieArena</title>
-    <link rel="stylesheet" href="/bootstrap-5.3.7-dist/css/bootstrap.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-        }
-        .navbar {
-            background-color: #222;
-            padding: 15px;
-        }
-        .navbar-brand span {
-            color: red;
-        }
-        .section-title {
-            margin-top: 40px;
-            margin-bottom: 20px;
-        }
-        .series-card {
-            background-color: #222;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .series-card img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-        }
-        .series-card .card-body {
-            padding: 15px;
-        }
-        .footer {
-            background-color: #222;
-            padding: 30px;
-            color: #aaa;
-            text-align: center;
-            margin-top: 40px;
-        }
-    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html"><i class="fas fa-film text-danger"></i> Movie<span>Arena</span></a>
-            <div class="d-flex ms-auto align-items-center">
-                <a href="loginUs.html" class="btn btn-danger">Login</a>
-            </div>
+    <header id="header">
+        <div class="header-content">
+            <h1><i class="fas fa-film"></i> MovieArena</h1>
+            <nav>
+                <a href="index.php">Home</a>
+                <a href="seriesPage.php">TV Series</a>
+                <a href="aboutUs.php">About</a>
+                <a href="contactUs.php">Contact</a>
+                <a href="loginUs.php" class="login-btn">Login</a>
+                <a href="register.php" class="register-btn">Sign Up</a>
+            </nav>
         </div>
-    </nav>
+    </header>
 
-    <div class="container py-5">
-        <h2 class="section-title">Popular TV Series</h2>
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="series-card">
+    <section class="hero series-hero">
+        <div class="hero-content">
+            <h2>Binge-worthy TV Series</h2>
+            <p>Discover amazing stories, unforgettable characters, and endless entertainment</p>
+            <a href="loginUs.php">Start Watching <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <div class="movies-section">
+        <div class="container">
+            <h2 class="section-title">Popular TV Series</h2>
+            <div class="movies">
+                <div class="movie-card">
                     <img src="https://image.tmdb.org/t/p/w500/4BX8YyxKpPGGgx66DVU3XyXhaIb.jpg" alt="Stranger Things">
-                    <div class="card-body">
-                        <h5 class="card-title">Stranger Things</h5>
-                        <p class="card-text">A group of young friends witness supernatural forces and secret government exploits...</p>
+                    <div class="movie-info">
+                        <h3>Stranger Things</h3>
+                        <p>A group of young friends witness supernatural forces and secret government exploits...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="series-card">
+                
+                <div class="movie-card">
                     <img src="https://image.tmdb.org/t/p/w500/pIGK7H1KebU2xjGDAPuKQrYIskH.jpg" alt="The Witcher">
-                    <div class="card-body">
-                        <h5 class="card-title">The Witcher</h5>
-                        <p class="card-text">Geralt of Rivia, a solitary monster hunter, struggles to find his place in a world...</p>
+                    <div class="movie-info">
+                        <h3>The Witcher</h3>
+                        <p>Geralt of Rivia, a solitary monster hunter, struggles to find his place in a world...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="series-card">
+                
+                <div class="movie-card">
                     <img src="https://image.tmdb.org/t/p/w500/qJxzjUjCpTPvDHldNnlbRC4OqEH.jpg" alt="Game of Thrones">
-                    <div class="card-body">
-                        <h5 class="card-title">Game of Thrones</h5>
-                        <p class="card-text">Nine noble families wage war against each other to gain control over the mythical land of Westeros...</p>
+                    <div class="movie-info">
+                        <h3>Game of Thrones</h3>
+                        <p>Nine noble families wage war against each other to gain control over the mythical land of Westeros...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="series-card">
+                
+                <div class="movie-card">
                     <img src="https://image.tmdb.org/t/p/w500/rn7F8Af8sMiYc7MksLAF8jvVdaP.jpg" alt="Breaking Bad">
-                    <div class="card-body">
-                        <h5 class="card-title">Breaking Bad</h5>
-                        <p class="card-text">A chemistry teacher diagnosed with cancer turns to manufacturing and selling methamphetamine...</p>
+                    <div class="movie-info">
+                        <h3>Breaking Bad</h3>
+                        <p>A chemistry teacher diagnosed with cancer turns to manufacturing and selling methamphetamine...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg" alt="The Mandalorian">
+                    <div class="movie-info">
+                        <h3>The Mandalorian</h3>
+                        <p>The travels of a lone bounty hunter in the outer reaches of the galaxy, far from the authority of the New Republic...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61L8kuCQ9rXf6.jpg" alt="The Crown">
+                    <div class="movie-info">
+                        <h3>The Crown</h3>
+                        <p>The story of Queen Elizabeth II and the events that shaped the second half of the twentieth century...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/6POBWybSBDBKjSs1VAQcnQC1qyt.jpg" alt="The Boys">
+                    <div class="movie-info">
+                        <h3>The Boys</h3>
+                        <p>A group of vigilantes set out to take down corrupt superheroes who abuse their superpowers...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="movie-card">
+                    <img src="https://image.tmdb.org/t/p/w500/9PqD3wSIjntyJDBzMNuxuKHwpUD.jpg" alt="Wednesday">
+                    <div class="movie-info">
+                        <h3>Wednesday</h3>
+                        <p>Intelligent, sarcastic and a bit dead inside, Wednesday Addams investigates a murder spree while making new friends...</p>
+                        <div class="movie-actions">
+                            <button class="save-button">
+                                <i class="fas fa-heart"></i> Save
+                            </button>
+                            <button class="play-button">
+                                <i class="fas fa-play"></i> Play
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="footer">
-        <p>&copy; 2025 MovieArena. All rights reserved.</p>
-        <div>
-            <a href="index.html" class="text-decoration-none text-light mx-2">Home</a>
-            <a href="#" class="text-decoration-none text-light mx-2">TV Series</a>
-            <a href="aboutUs.html" class="text-decoration-none text-light mx-2">About</a>
-            <a href="contactUs.html" class="text-decoration-none text-light mx-2">Contact</a>
-            <a href="loginUs.html" class="text-decoration-none text-light mx-2">Login</a>
-        </div>
-        <div class="mt-3">
-            <a href="#" class="text-decoration-none text-light mx-2"><i class="fab fa-facebook"></i></a>
-            <a href="#" class="text-decoration-none text-light mx-2"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="text-decoration-none text-light mx-2"><i class="fab fa-instagram"></i></a>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="index.php">Home</a>
+                <a href="seriesPage.php">TV Series</a>
+                <a href="aboutUs.php">About Us</a>
+                <a href="contactUs.php">Contact</a>
+                <a href="loginUs.php">Login</a>
+                <a href="register.php">Register</a>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>&copy; 2025 MovieArena. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Play button functionality
+        document.querySelectorAll('.play-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const movieCard = this.closest('.movie-card');
+                const movieTitle = movieCard.querySelector('h3').textContent;
+                alert(`Playing: ${movieTitle}`);
+                // Here you would typically redirect to a video player page
+            });
+        });
+
+        // Save button functionality
+        document.querySelectorAll('.save-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const movieCard = this.closest('.movie-card');
+                const movieTitle = movieCard.querySelector('h3').textContent;
+                alert(`Added to favorites: ${movieTitle}`);
+                // Here you would typically save to favorites
+            });
+        });
+    </script>
 </body>
 </html>

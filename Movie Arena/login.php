@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user = $result->fetch_assoc();
 
     if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user'] = $user['fullname'];
+        $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_email'] = $user['email'];
         
         // Redirect to dashboard
@@ -33,18 +33,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - MovieArena</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <header id="header">
+        <div class="header-content">
+            <h1><i class="fas fa-film"></i> MovieArena</h1>
+            <nav>
+                <a href="index.php">Home</a>
+                <a href="seriesPage.php">TV Series</a>
+                <a href="aboutUs.php">About</a>
+                <a href="contactUs.php">Contact</a>
+            </nav>
+        </div>
+    </header>
+
     <div class="auth-container">
-  <h2>Login</h2> 
-  <?php if (isset($error)) { echo "<p style='color:red;'>$error</p>"; } ?>
-  <form method="POST" action="">
-            <input type="email" name="email" placeholder="Email" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
+        <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+        <?php if (isset($error)) { echo "<p style='color:#e50914; text-align:center; margin-bottom:20px;'>$error</p>"; } ?>
+        <form method="POST" action="">
+            <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
         </form>
         <p>Don't have an account? <a href="register.php">Register here</a></p>
-  </form>
-</div>
+        <p><a href="index.php">Back to Home</a></p>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="index.php">Home</a>
+                <a href="seriesPage.php">TV Series</a>
+                <a href="aboutUs.php">About Us</a>
+                <a href="contactUs.php">Contact</a>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>&copy; 2025 MovieArena. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+    </script>
 </body>
 </html>
