@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify - Music Streaming</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background-color: #334155;
+            border-radius: 2px;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #3b82f6;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .song-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        
+        .now-playing {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            background: #334155;
+            border-radius: 2px;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .playlist-item:hover {
+            background-color: rgba(30, 41, 59, 0.5);
+        }
+        
+        /* Animation for playing state */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .playing {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 bg-slate-800 flex flex-col hidden md:flex">
+            <div class="p-4">
+                <h1 class="text-2xl font-bold text-blue-400 flex items-center">
+                    <i class="fas fa-music mr-2"></i> Melodify
+                </h1>
+            </div>
+            <nav class="flex-1 overflow-y-auto">
+                <ul class="space-y-1 p-2">
+                    <li>
+                        <a href="#" class="flex items-center p-3 rounded-lg bg-slate-700 text-white">
+                            <i class="fas fa-home mr-3"></i> Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-3 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                            <i class="fas fa-search mr-3"></i> Search
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-3 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                            <i class="fas fa-compact-disc mr-3"></i> Your Library
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="p-4">
+                    <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">PLAYLISTS</h3>
+                    <ul class="mt-2 space-y-1">
+                        <li>
+                            <a href="#" class="flex items-center p-2 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                <i class="fas fa-heart mr-3 text-pink-500"></i> Liked Songs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-2 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                <i class="fas fa-plus-circle mr-3 text-blue-400"></i> Create Playlist
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-2 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                <i class="fas fa-clock mr-3 text-yellow-400"></i> Recently Played
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-700">
+                <div class="flex items-center">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="w-8 h-8 rounded-full">
+                    <div class="ml-2">
+                        <p class="text-sm font-medium">John Doe</p>
+                        <p class="text-xs text-slate-400">Premium</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile sidebar toggle -->
+        <div class="md:hidden fixed bottom-20 left-4 z-10">
+            <button id="sidebarToggle" class="p-3 bg-slate-700 rounded-full shadow-lg">
+                <i class="fas fa-bars text-white"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile sidebar -->
+        <div id="mobileSidebar" class="fixed inset-0 bg-slate-900 z-20 transform -translate-x-full transition-transform duration-300 md:hidden">
+            <div class="p-4">
+                <div class="flex justify-between items-center">
+                    <h1 class="text-2xl font-bold text-blue-400 flex items-center">
+                        <i class="fas fa-music mr-2"></i> Melodify
+                    </h1>
+                    <button id="closeSidebar" class="text-slate-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <nav class="mt-6">
+                    <ul class="space-y-4">
+                        <li>
+                            <a href="#" class="flex items-center p-3 rounded-lg bg-slate-700 text-white">
+                                <i class="fas fa-home mr-3"></i> Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                <i class="fas fa-search mr-3"></i> Search
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-3 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                <i class="fas fa-compact-disc mr-3"></i> Your Library
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-8">
+                        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">PLAYLISTS</h3>
+                        <ul class="mt-4 space-y-2">
+                            <li>
+                                <a href="#" class="flex items-center p-2 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                    <i class="fas fa-heart mr-3 text-pink-500"></i> Liked Songs
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="flex items-center p-2 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                    <i class="fas fa-plus-circle mr-3 text-blue-400"></i> Create Playlist
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="flex items-center p-2 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white">
+                                    <i class="fas fa-clock mr-3 text-yellow-400"></i> Recently Played
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main content -->
+        <div class="flex-1 overflow-y-auto pb-32">
+            <div class="p-6">
+                <!-- Search bar -->
+                <div class="relative mb-6">
+                    <input type="text" id="searchInput" placeholder="Search for songs, artists, or albums" 
+                           class="w-full bg-slate-700 rounded-full py-3 px-5 pl-12 pr-10 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-slate-400"></i>
+                    <button id="clearSearch" class="absolute right-4 top-3.5 text-slate-400 hover:text-white hidden">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <!-- Search Results (hidden by default) -->
+                <div id="searchResults" class="hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold">Search Results</h2>
+                        <div class="flex space-x-2">
+                            <button class="search-filter-btn active px-3 py-1 rounded-full bg-blue-500 text-white text-sm">All</button>
+                            <button class="search-filter-btn px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-sm hover:bg-slate-600">Songs</button>
+                            <button class="search-filter-btn px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-sm hover:bg-slate-600">Artists</button>
+                            <button class="search-filter-btn px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-sm hover:bg-slate-600">Albums</button>
+                            <button class="search-filter-btn px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-sm hover:bg-slate-600">Playlists</button>
+                        </div>
+                    </div>
+
+                    <!-- Songs Results -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold mb-4">Songs</h3>
+                        <div class="space-y-2">
+                            <!-- Song result item -->
+                            <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-700 cursor-pointer">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-slate-600 rounded mr-3 flex-shrink-0"></div>
+                                    <div>
+                                        <h4 class="font-medium">Blinding Lights</h4>
+                                        <p class="text-sm text-slate-400">The Weeknd • After Hours</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-slate-400">3:20</span>
+                            </div>
+                            <!-- More song results would go here -->
+                        </div>
+                    </div>
+
+                    <!-- Artists Results -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold mb-4">Artists</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <!-- Artist result item -->
+                            <div class="flex flex-col items-center p-3 rounded-lg hover:bg-slate-700 cursor-pointer">
+                                <div class="w-24 h-24 bg-slate-600 rounded-full mb-2"></div>
+                                <h4 class="font-medium text-center">The Weeknd</h4>
+                                <p class="text-xs text-slate-400">Artist</p>
+                            </div>
+                            <!-- More artist results would go here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recently played -->
+                <h2 class="text-xl font-bold mb-4">Recently Played</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-8">
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Blinding Lights</h3>
+                        <p class="text-sm text-slate-400 truncate">The Weeknd</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e0268e9a4a1a0f169dc6f7b3e4b" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Save Your Tears</h3>
+                        <p class="text-sm text-slate-400 truncate">The Weeknd</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02c8e4488908e15f7f1b1e8a0e" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Levitating</h3>
+                        <p class="text-sm text-slate-400 truncate">Dua Lipa</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02a991995542d50a691b9ae5be" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Stay</h3>
+                        <p class="text-sm text-slate-400 truncate">The Kid LAROI, Justin Bieber</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02e6f407c7f3a0ec98845e4431" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">good 4 u</h3>
+                        <p class="text-sm text-slate-400 truncate">Olivia Rodrigo</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e0295f754318336a07e85ec59bc" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Montero</h3>
+                        <p class="text-sm text-slate-400 truncate">Lil Nas X</p>
+                    </div>
+                </div>
+                
+                <!-- Made for you -->
+                <h2 class="text-xl font-bold mb-4">Made For You</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-gradient-to-br from-purple-900 to-blue-900 rounded-lg p-6 flex items-center">
+                        <div class="mr-4">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-heart text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Liked Songs</h3>
+                            <p class="text-sm text-slate-300">Your liked songs in one playlist</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-amber-900 to-yellow-600 rounded-lg p-6 flex items-center">
+                        <div class="mr-4">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-clock text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">On Repeat</h3>
+                            <p class="text-sm text-slate-300">Songs you love right now</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-emerald-900 to-green-600 rounded-lg p-6 flex items-center">
+                        <div class="mr-4">
+                            <div class="w-16 h-16 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-music text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Daily Mix 1</h3>
+                            <p class="text-sm text-slate-300">Made for your taste</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Popular albums -->
+                <h2 class="text-xl font-bold mb-4">Popular Albums</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02668e3a7c647628a5f7a4e9e0" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">After Hours</h3>
+                        <p class="text-sm text-slate-400 truncate">The Weeknd</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02e6f407c7f3a0ec98845e4431" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">SOUR</h3>
+                        <p class="text-sm text-slate-400 truncate">Olivia Rodrigo</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02c591d8f54d3e7b4d4a6e69f9" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Future Nostalgia</h3>
+                        <p class="text-sm text-slate-400 truncate">Dua Lipa</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02e1d6e5e59a4023b6744df3d9" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Justice</h3>
+                        <p class="text-sm text-slate-400 truncate">Justin Bieber</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02f907de96b9a4fbc04accc0d5" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Planet Her</h3>
+                        <p class="text-sm text-slate-400 truncate">Doja Cat</p>
+                    </div>
+                    
+                    <div class="song-card bg-slate-700 rounded-lg p-4 cursor-pointer transition-all duration-200">
+                        <div class="relative mb-3">
+                            <img src="https://i.scdn.co/image/ab67616d00001e02a3f4bf0bd9479a2596e1e9f8" alt="Album Cover" class="w-full rounded-lg">
+                            <button class="play-btn absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <i class="fas fa-play text-white"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-medium truncate">Happier Than Ever</h3>
+                        <p class="text-sm text-slate-400 truncate">Billie Eilish</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Player bar -->
+    <div class="now-playing fixed bottom-0 left-0 right-0 h-20 bg-slate-800 border-t border-slate-700 flex items-center px-4 z-10">
+        <div class="flex items-center w-1/4">
+            <img src="https://i.scdn.co/image/ab67616d00001e02ff9ca10b55ce82ae553c8228" alt="Album Cover" class="w-14 h-14 rounded mr-3">
+            <div>
+                <h4 class="font-medium text-sm">Blinding Lights</h4>
+                <p class="text-xs text-slate-400">The Weeknd</p>
+            </div>
+            <button class="ml-4 text-slate-400 hover:text-white">
+                <i class="far fa-heart"></i>
+            </button>
+        </div>
+        
+        <div class="flex-1 flex flex-col items-center">
+            <div class="flex items-center space-x-4 mb-1">
+                <button class="text-slate-400 hover:text-white text-lg">
+                    <i class="fas fa-random"></i>
+                </button>
+                <button class="text-slate-400 hover:text-white text-lg">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button id="playPauseBtn" class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-black hover:scale-105 transition-transform">
+                    <i class="fas fa-play text-sm"></i>
+                </button>
+                <button class="text-slate-400 hover:text-white text-lg">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+                <button class="text-slate-400 hover:text-white text-lg">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            <div class="w-full flex items-center space-x-2">
+                <span class="text-xs text-slate-400">1:23</span>
+                <div class="progress-bar flex-1">
+                    <div class="progress"></div>
+                </div>
+                <span class="text-xs text-slate-400">3:45</span>
+            </div>
+        </div>
+        
+        <div class="w-1/4 flex justify-end items-center space-x-4">
+            <button class="text-slate-400 hover:text-white">
+                <i class="fas fa-list"></i>
+            </button>
+            <button class="text-slate-400 hover:text-white">
+                <i class="fas fa-laptop"></i>
+            </button>
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-volume-down text-slate-400"></i>
+                <input type="range" min="0" max="100" value="80" class="volume-slider">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio element (hidden) -->
+    <audio id="audioPlayer" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+    
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+        const searchResults = document.getElementById('searchResults');
+
+        searchInput.addEventListener('input', (e) => {
+            if (e.target.value.length > 0) {
+                clearSearch.classList.remove('hidden');
+                searchResults.classList.remove('hidden');
+                // In a real app, you would make an API call here
+                // and update the search results dynamically
+            } else {
+                clearSearch.classList.add('hidden');
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearch.classList.add('hidden');
+            searchResults.classList.add('hidden');
+        });
+
+        // Search filter buttons
+        const filterButtons = document.querySelectorAll('.search-filter-btn');
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
+                filterButtons.forEach(btn => btn.classList.add('bg-slate-700', 'text-slate-300'));
+                button.classList.add('active', 'bg-blue-500', 'text-white');
+                button.classList.remove('bg-slate-700', 'text-slate-300');
+                // In a real app, you would filter the results here
+            });
+        });
+
+        // Mobile sidebar toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        
+        sidebarToggle.addEventListener('click', () => {
+            mobileSidebar.classList.remove('-translate-x-full');
+        });
+        
+        closeSidebar.addEventListener('click', () => {
+            mobileSidebar.classList.add('-translate-x-full');
+        });
+        
+        // Audio player functionality
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const progressBar = document.querySelector('.progress');
+        const songCards = document.querySelectorAll('.song-card');
+        const playButtons = document.querySelectorAll('.play-btn');
+        
+        let isPlaying = false;
+        
+        // Play/pause functionality
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audioPlayer.pause();
+                playPauseBtn.innerHTML = '<i class="fas fa-play text-sm"></i>';
+            } else {
+                audioPlayer.play();
+                playPauseBtn.innerHTML = '<i class="fas fa-pause text-sm"></i>';
+            }
+            isPlaying = !isPlaying;
+            playPauseBtn.classList.toggle('playing');
+        });
+        
+        // Update progress bar
+        audioPlayer.addEventListener('timeupdate', () => {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.style.width = `${progress}%`;
+        });
+        
+        // Click on progress bar to seek
+        document.querySelector('.progress-bar').addEventListener('click', (e) => {
+            const progressBarWidth = e.target.clientWidth;
+            const clickPosition = e.offsetX;
+            const seekTime = (clickPosition / progressBarWidth) * audioPlayer.duration;
+            audioPlayer.currentTime = seekTime;
+        });
+        
+        // Play song when clicking on song card or play button
+        songCards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                // In a real app, you would load the correct song here
+                audioPlayer.src = `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${index + 1}.mp3`;
+                audioPlayer.play();
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fas fa-pause text-sm"></i>';
+                playPauseBtn.classList.add('playing');
+                
+                // Update now playing info
+                const songTitle = card.querySelector('h3').textContent;
+                const artistName = card.querySelector('p').textContent;
+                const albumCover = card.querySelector('img').src;
+                
+                document.querySelector('.now-playing img').src = albumCover;
+                document.querySelector('.now-playing h4').textContent = songTitle;
+                document.querySelector('.now-playing p').textContent = artistName;
+            });
+        });
+        
+        playButtons.forEach((btn, index) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering the card click event
+                
+                // In a real app, you would load the correct song here
+                audioPlayer.src = `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${index + 1}.mp3`;
+                audioPlayer.play();
+                isPlaying = true;
+                playPauseBtn.innerHTML = '<i class="fas fa-pause text-sm"></i>';
+                playPauseBtn.classList.add('playing');
+                
+                // Update now playing info
+                const card = btn.closest('.song-card');
+                const songTitle = card.querySelector('h3').textContent;
+                const artistName = card.querySelector('p').textContent;
+                const albumCover = card.querySelector('img').src;
+                
+                document.querySelector('.now-playing img').src = albumCover;
+                document.querySelector('.now-playing h4').textContent = songTitle;
+                document.querySelector('.now-playing p').textContent = artistName;
+            });
+        });
+        
+        // Volume control
+        const volumeSlider = document.querySelector('.volume-slider');
+        volumeSlider.addEventListener('input', () => {
+            audioPlayer.volume = volumeSlider.value / 100;
+        });
+    </script>
+</body>
+</html>

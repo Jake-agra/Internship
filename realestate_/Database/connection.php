@@ -1,71 +1,82 @@
 <?php
-// Database configuration
-$dbhost = "localhost";
-$dbname = "realestate_";
-$dbpassword = "";
-$dbuser = "root";
-$dbport = 3306; // Default MySQL port
+/**
+ * Simple and Reliable Database Connection
+ * Compatible with existing code structure
+ */
 
-// Try different connection methods for XAMPP compatibility
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Database configuration - Simple and straightforward
+$db_config = [
+    'host' => 'localhost',
+    'database' => 'realestate',
+    'username' => 'root',
+    'password' => '',
+    'port' => 3306
+];
+
+// Create simple connection
+$conn = null;
 try {
-    // Method 1: Standard connection
-    $conn = new mysqli($dbhost, $dbuser, $dbpassword, $dbname, $dbport);
+    $conn = new mysqli($db_config['host'], $db_config['username'], $db_config['password'], $db_config['database'], $db_config['port']);
     
-    // Check connection
     if ($conn->connect_error) {
         throw new Exception("Connection failed: " . $conn->connect_error);
     }
     
-    // Set charset to utf8
-    $conn->set_charset("utf8");
-    
+    $conn->set_charset("utf8mb4");
 } catch (Exception $e) {
-    // Method 2: Try with socket (for XAMPP)
-    try {
-        $socket_path = "/opt/lampp/var/mysql/mysql.sock";
-        $conn = new mysqli($dbhost, $dbuser, $dbpassword, $dbname, null, $socket_path);
-        
-        if ($conn->connect_error) {
-            throw new Exception("Socket connection failed: " . $conn->connect_error);
-        }
-        
-        $conn->set_charset("utf8");
-        
-    } catch (Exception $e2) {
-        // Method 3: Try localhost with different port
-        try {
-            $conn = new mysqli("127.0.0.1", $dbuser, $dbpassword, $dbname, 3306);
-            
-            if ($conn->connect_error) {
-                throw new Exception("127.0.0.1 connection failed: " . $conn->connect_error);
-            }
-            
-            $conn->set_charset("utf8");
-            
-        } catch (Exception $e3) {
-            // All methods failed
-            die("<div style='background: #f8d7da; color: #721c24; padding: 20px; border: 1px solid #f5c6cb; border-radius: 5px; margin: 20px;'>
-                <h3>Database Connection Error</h3>
-                <p><strong>Could not connect to MySQL database.</strong></p>
-                <p>Please ensure XAMPP is running and MySQL service is started.</p>
-                <p>Error details:</p>
-                <ul>
-                    <li>Standard connection: " . $e->getMessage() . "</li>
-                    <li>Socket connection: " . $e2->getMessage() . "</li>
-                    <li>127.0.0.1 connection: " . $e3->getMessage() . "</li>
-                </ul>
-                <p><strong>To fix this:</strong></p>
-                <ol>
-                    <li>Start XAMPP Control Panel</li>
-                    <li>Start Apache and MySQL services</li>
-                    <li>Refresh this page</li>
-                </ol>
-            </div>");
-        }
+    die("<div style='padding: 20px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; margin: 20px; border-radius: 5px;'>
+        <h3>Database Connection Error</h3>
+        <p>" . $e->getMessage() . "</p>
+        <p><strong>Please check:</strong></p>
+        <ul>
+            <li>XAMPP/WAMP is running</li>
+            <li>MySQL service is started</li>
+            <li>Database 'realestate' exists</li>
+        </ul>
+    </div>");
+}
+
+// For backward compatibility
+class DatabaseConfig {
+    public static function get($key) {
+        global $db_config;
+        return isset($db_config[$key]) ? $db_config[$key] : null;
     }
 }
 
-// Enable error reporting for mysqli
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+// Verify connection is working
+if ($conn) {
+    // Test query to ensure database is accessible
+    $test_query = "SELECT 1";
+    if (!$conn->query($test_query)) {
+        die("<div style='padding: 20px; background: #f8d7da; color: #721c24;'>
+            <h3>Database Test Failed</h3>
+            <p>Connection established but cannot execute queries.</p>
+        </div>");
+    }
+}
+
+// Simple helper functions
+function executeQuery($sql, $params = []) {
+    global $conn;
+    if (empty($params)) {
+        return $conn->query($sql);
+    }
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->execute($params);
+        return $stmt;
+    }
+    return false;
+}
+
+function getLastInsertId() {
+    global $conn;
+    return $conn->insert_id;
+}
 
 ?>

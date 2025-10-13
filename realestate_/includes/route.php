@@ -1,39 +1,9 @@
-route
 <?php
-// Simple routing system for the real estate application
-
-class Router {
-    private $routes = [];
-    
-    public function addRoute($path, $callback) {
-        $this->routes[$path] = $callback;
-    }
-    
-    public function route($requestUri) {
-        // Remove query string
-        $path = parse_url($requestUri, PHP_URL_PATH);
-        
-        // Remove leading slash if present
-        $path = ltrim($path, '/');
-        
-        // If empty, set to home
-        if (empty($path)) {
-            $path = 'home';
-        }
-        
-        if (array_key_exists($path, $this->routes)) {
-            return $this->routes[$path]();
-        } else {
-            // 404 - Page not found
-            http_response_code(404);
-            return "Page not found";
-        }
-    }
-}
+// Authentication and utility functions for the real estate application
 
 // Authentication helper functions
 function isLoggedIn() {
-    return isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
 
 function requireLogin() {
@@ -43,16 +13,24 @@ function requireLogin() {
     }
 }
 
-function getUserType() {
-    return isset($_SESSION['user_type']) ? $_SESSION['user_type'] : null;
+function getUserId() {
+    return isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+}
+
+function getUserEmail() {
+    return isset($_SESSION['user_email']) ? $_SESSION['user_email'] : null;
+}
+
+function getUserRole() {
+    return isset($_SESSION['user_role']) ? $_SESSION['user_role'] : 'client';
 }
 
 function isAdmin() {
-    return getUserType() === 'admin';
+    return getUserRole() === 'admin';
 }
 
 function isAgent() {
-    return getUserType() === 'agent';
+    return getUserRole() === 'agent';
 }
 
 function redirectTo($path) {
@@ -71,4 +49,19 @@ function generateCSRFToken() {
 function validateCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
-?>
+
+// Input sanitization
+function sanitizeInput($input) {
+    return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
+}
+
+// Format currency
+function formatCurrency($amount, $currency = 'USD') {
+    return $currency . ' ' . number_format($amount, 2);
+}
+
+// Generate secure password
+function generateSecurePassword($length = 12) {
+    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    return substr(str_shuffle($characters), 0, $length);
+}

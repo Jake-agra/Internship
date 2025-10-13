@@ -1,0 +1,37 @@
+# Dependencies
+/vendor/
+
+# Environment variables
+.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local development
+*.local
+
+# Composer
+composer.lock
+composer.phar
+
+# Node modules (if any)
+node_modules/
+
+# Cache
+/cache/
+
+# Debug
+/debug/
+
+# Uploads (if any)
+/uploads/
