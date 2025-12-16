@@ -2,6 +2,7 @@
 session_start();
 include('./Database/connection.php');
 include('./includes/route.php');
+include('./includes/security.php');
 
 $page_title = 'Property Listings - Real Estate';
 $page_description = 'Browse our comprehensive collection of premium properties. Find your perfect home from thousands of listings.';
@@ -272,7 +273,7 @@ $end_page = min($total_pages, $page + 2);
             </div>
             
             <form method="get" id="propertySearchForm">
-                <input type="hidden" name="csrf_token" value="<?= function_exists('csrf_token') ? csrf_token() : '' ; ?>">
+                <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
                 <!-- Basic Search Row -->
                 <div class="row g-3 mb-3">
                     <div class="col-md-4">
@@ -460,6 +461,98 @@ $end_page = min($total_pages, $page + 2);
                 <div class="small text-primary"><?= (int)$stats['available_properties']; ?> total available</div>
             </div>
         </div>
+
+        <!-- Enhanced Result Summary -->
+        <div class="alert alert-info mt-3 mb-4" role="alert">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong><i class="fas fa-search me-2"></i>Search Results:</strong>
+                    <span class="ms-2">Found <strong><?= $total_properties; ?></strong> <?= ($total_properties === 1) ? 'property' : 'properties'; ?></span>
+                    <?php if (!empty($search)): ?>
+                        <span class="ms-2">matching "<strong><?= htmlspecialchars($search); ?></strong>"</span>
+                    <?php endif; ?>
+                    <?php if (!empty($property_type)): ?>
+                        <span class="ms-2">- Type: <strong><?= htmlspecialchars(implode(', ', array_filter(array_map(function($t) use ($property_type) { return $t['id'] == $property_type ? $t['type_name'] : ''; }, $property_types)))); ?></strong></span>
+                    <?php endif; ?>
+                    <?php if (!empty($location)): ?>
+                        <span class="ms-2">- Location: <strong><?= htmlspecialchars($location); ?></strong></span>
+                    <?php endif; ?>
+                    <?php if ($min_price > 0 || $max_price > 0): ?>
+                        <span class="ms-2">- Price range: <strong>
+                            <?php if ($min_price > 0): ?><?= number_format($min_price); ?><?php endif; ?>
+                            <?php if ($min_price > 0 && $max_price > 0): ?> - <?php endif; ?>
+                            <?php if ($max_price > 0): ?><?= number_format($max_price); ?><?php endif; ?>
+                        </strong></span>
+                    <?php endif; ?>
+                    <?php if ($page > 1): ?>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Displaying <?= max(1, ($page - 1) * $per_page + 1); ?> to <?= min($page * $per_page, $total_properties); ?> of <?= $total_properties; ?> properties
+                            </small>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php if (isLoggedIn() && getUserRole() === 'client'): ?>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#saveSearchModal">
+                        <i class="fas fa-bookmark me-1"></i> Save Search
+                    </button>
+                <?php endif; ?>
+                <button type="button" class="btn btn-info btn-sm" onclick="viewComparison()" id="viewComparisonBtn" style="display: none;">
+                    <i class="fas fa-columns me-1"></i> Compare
+                    <span id="comparisonCount" class="badge bg-light text-dark ms-1" style="display: none;">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Save Search Modal -->
+        <?php if (isLoggedIn() && getUserRole() === 'client'): ?>
+        <div class="modal fade" id="saveSearchModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fas fa-bookmark me-2"></i>Save This Search</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form method="POST" action="saved_searches_handler.php">
+                        <div class="modal-body">
+                            <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
+                            <input type="hidden" name="save_search" value="1">
+                            
+                            <div class="mb-3">
+                                <label for="searchName" class="form-label">Search Name</label>
+                                <input type="text" class="form-control" id="searchName" name="search_name" placeholder="e.g., Waterfront Properties Under $500K" required>
+                                <small class="text-muted">Give your search a memorable name</small>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="emailAlerts" name="email_alerts">
+                                <label class="form-check-label" for="emailAlerts">
+                                    Receive Email Alerts
+                                </label>
+                                <small class="text-muted d-block mt-1">Get notified when new properties match your search</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="alertFrequency" class="form-label">Alert Frequency</label>
+                                <select class="form-select" id="alertFrequency" name="alert_frequency">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly" selected>Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- Map View -->
@@ -528,6 +621,11 @@ $end_page = min($total_pages, $page + 2);
                                                 <i class="fas fa-heart"></i>
                                             </button>
                                         <?php endif; ?>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm comparison-btn"
+                                                data-property-id="<?= $property['id']; ?>"
+                                                title="Add to comparison">
+                                            <i class="fas fa-columns me-1"></i>Compare
+                                        </button>
                                         <a href="property_details.php?id=<?= $property['id']; ?>" class="btn btn-primary btn-sm">
                                             <i class="fas fa-eye me-1"></i>View Details
                                         </a>
@@ -862,6 +960,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
+
+<script>
 // Enhanced property search functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
@@ -944,8 +1044,25 @@ document.addEventListener('DOMContentLoaded', function() {
         !empty($_GET['year_built'])
     ); ?>;
     
-    if (hasAdvancedFilters) {
+    if (hasAdvancedFilters && advancedFilters) {
         advancedFilters.classList.add('show');
+    }
+    
+    // Initialize comparison button handlers
+    const comparisonBtns = document.querySelectorAll('.comparison-btn');
+    comparisonBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            addToComparison(this.dataset.propertyId);
+        });
+    });
+    
+    // Load comparison cart from localStorage
+    loadComparisonCart();
+    
+    // Initialize view mode from localStorage
+    const savedViewMode = localStorage.getItem('propertyViewMode');
+    if (savedViewMode === 'list') {
+        toggleViewMode('list');
     }
 });
 
@@ -1042,23 +1159,22 @@ function checkBookmarkStatus(propertyId, btn) {
 
 // Enhanced toast notifications
 function showToast(message, type = 'info') {
+    // Map 'error' to 'danger' for Bootstrap
+    const bootstrapType = type === 'error' ? 'danger' : type;
+    
     // Remove existing toasts
     const existingToasts = document.querySelectorAll('.toast-custom');
     existingToasts.forEach(toast => toast.remove());
-    
+
     const toastHtml = `
-        <div class="toast-custom position-fixed top-0 end-0 m-3" style="z-index: 9999;">
-            <div class="alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} 
-                        alert-dismissible fade show mb-0" role="alert">
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+        <div class="toast-custom alert alert-${bootstrapType} position-fixed"
+            style="top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
+            <strong>${message}</strong>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', toastHtml);
-    
+
     // Auto-remove after 5 seconds
     setTimeout(() => {
         const toast = document.querySelector('.toast-custom');
@@ -1144,12 +1260,73 @@ function toggleViewMode(mode) {
     localStorage.setItem('propertyViewMode', mode);
 }
 
-// Initialize view mode from localStorage
-document.addEventListener('DOMContentLoaded', function() {
-    const savedViewMode = localStorage.getItem('propertyViewMode');
-    if (savedViewMode === 'list') {
-        toggleViewMode('list');
+
+// Comparison cart management
+function addToComparison(propertyId) {
+    let cart = JSON.parse(localStorage.getItem('comparisonCart') || '[]');
+    
+    if (cart.includes(propertyId)) {
+        cart = cart.filter(id => id !== propertyId);
+        showToast('Property removed from comparison', 'info');
+    } else {
+        if (cart.length >= 4) {
+            showToast('Maximum 4 properties can be compared', 'warning');
+            return;
+        }
+        cart.push(propertyId);
+        showToast('Property added to comparison', 'success');
     }
-});
+    
+    localStorage.setItem('comparisonCart', JSON.stringify(cart));
+    updateComparisonButton(propertyId);
+    updateComparisonCart();
+}
+
+function updateComparisonButton(propertyId) {
+    const btn = document.querySelector(`[data-property-id="${propertyId}"].comparison-btn`);
+    if (!btn) return;
+    
+    let cart = JSON.parse(localStorage.getItem('comparisonCart') || '[]');
+    if (cart.includes(propertyId)) {
+        btn.classList.add('active');
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-secondary');
+        btn.innerHTML = '<i class="fas fa-check me-1"></i>Added';
+    } else {
+        btn.classList.remove('active');
+        btn.classList.add('btn-outline-secondary');
+        btn.classList.remove('btn-secondary');
+        btn.innerHTML = '<i class="fas fa-columns me-1"></i>Compare';
+    }
+}
+
+function loadComparisonCart() {
+    let cart = JSON.parse(localStorage.getItem('comparisonCart') || '[]');
+    cart.forEach(propertyId => {
+        updateComparisonButton(propertyId);
+    });
+    updateComparisonCart();
+}
+
+function updateComparisonCart() {
+    let cart = JSON.parse(localStorage.getItem('comparisonCart') || '[]');
+    const countBadge = document.getElementById('comparisonCount');
+    const viewBtn = document.getElementById('viewComparisonBtn');
+    if (countBadge && viewBtn) {
+        countBadge.textContent = cart.length;
+        countBadge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+        viewBtn.style.display = cart.length > 0 ? 'inline-block' : 'none';
+    }
+}
+
+// View comparison
+function viewComparison() {
+    let cart = JSON.parse(localStorage.getItem('comparisonCart') || '[]');
+    if (cart.length > 0) {
+        window.location.href = `property_comparison.php?ids=${cart.join(',')}`;
+    } else {
+        showToast('No properties to compare', 'warning');
+    }
+}
 </script>
 <?php include('./includes/footer.php'); ?>

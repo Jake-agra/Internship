@@ -3,8 +3,8 @@ session_start();
 include('../Database/connection.php');
 include('../includes/route.php');
 
-// Check if user is admin
-if (!isAdmin()) {
+// Check if user is admin or agent
+if (!isAdmin() && !isAgent()) {
     header('Location: ../login.php');
     exit();
 }
@@ -31,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = $_POST['status'];
     $is_featured = isset($_POST['is_featured']) ? 1 : 0;
     $address_details = trim($_POST['address_details']);
+    $video_url = trim($_POST['video_url'] ?? '');
+    $virtual_tour_url = trim($_POST['virtual_tour_url'] ?? '');
     
     // Validate required fields
     if (empty($propertiesname) || empty($description) || $property_type_id <= 0 || $price_amount <= 0 || empty($city)) {
@@ -66,9 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Generate slug
             $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $propertiesname)));
             
-            // Insert property
-            $property_stmt = $conn->prepare("INSERT INTO properties (propertiesname, slug, description, price_id, user_id, property_type_id, location_id, status, bedrooms, bathrooms, area_sqft, year_built, parking_spaces, is_featured, address_details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $property_stmt->bind_param("sssiiiisiiiiis", $propertiesname, $slug, $description, $price_id, $_SESSION['user_id'], $property_type_id, $location_id, $status, $bedrooms, $bathrooms, $area_sqft, $year_built, $parking_spaces, $is_featured, $address_details);
+            // Insert property with video URLs
+            $property_stmt = $conn->prepare("INSERT INTO properties (propertiesname, slug, description, price_id, user_id, property_type_id, location_id, status, bedrooms, bathrooms, area_sqft, year_built, parking_spaces, is_featured, address_details, video_url, virtual_tour_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $property_stmt->bind_param("sssiiiisiiiiisss", $propertiesname, $slug, $description, $price_id, $_SESSION['user_id'], $property_type_id, $location_id, $status, $bedrooms, $bathrooms, $area_sqft, $year_built, $parking_spaces, $is_featured, $address_details, $video_url, $virtual_tour_url);
             $property_stmt->execute();
             $property_id = $conn->insert_id;
             $property_stmt->close();
@@ -330,6 +332,23 @@ if ($result = $conn->query("SELECT id, type_name FROM property_types WHERE is_ac
                                 <option value="rented">Rented</option>
                                 <option value="inactive">Inactive</option>
                             </select>
+                        </div>
+
+                        <!-- Media Section -->
+                        <div class="col-12">
+                            <h5 class="mb-3 mt-4"><i class="fas fa-video me-2"></i>Media</h5>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="video_url" class="form-label">Video Tour URL</label>
+                            <input type="url" class="form-control" id="video_url" name="video_url" placeholder="https://www.youtube.com/watch?v=... or https://example.com/video.mp4">
+                            <small class="text-muted">YouTube URL or direct video file URL (MP4)</small>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="virtual_tour_url" class="form-label">Virtual Tour URL (360°)</label>
+                            <input type="url" class="form-control" id="virtual_tour_url" name="virtual_tour_url" placeholder="https://example.com/virtual-tour">
+                            <small class="text-muted">Matterport or other 360° virtual tour platform URL</small>
                         </div>
 
                         <div class="col-md-4">

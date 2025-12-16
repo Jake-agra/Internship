@@ -44,6 +44,95 @@ function generateUniqueFilename($original_name) {
     return uniqid() . '_' . time() . '.' . $extension;
 }
 
+// Function to validate image dimensions
+function validateImageDimensions($file_path, $min_width = 400, $min_height = 300, $max_width = 4000, $max_height = 4000) {
+    $image_info = getimagesize($file_path);
+    if (!$image_info) {
+        return ['valid' => false, 'error' => 'Could not determine image dimensions'];
+    }
+    
+    $width = $image_info[0];
+    $height = $image_info[1];
+    
+    if ($width < $min_width || $height < $min_height) {
+        return ['valid' => false, 'error' => "Image too small. Minimum: {$min_width}x{$min_height}, Got: {$width}x{$height}"];
+    }
+    
+    if ($width > $max_width || $height > $max_height) {
+        return ['valid' => false, 'error' => "Image too large. Maximum: {$max_width}x{$max_height}, Got: {$width}x{$height}"];
+    }
+    
+    return ['valid' => true, 'width' => $width, 'height' => $height];
+}
+
+// Function to strip EXIF data from image (privacy protection)
+function stripEXIFData($source_path, $destination_path = null) {
+    if (!$destination_path) {
+        $destination_path = $source_path;
+    }
+    
+    try {
+        $image_info = getimagesize($source_path);
+        if (!$image_info) {
+            return false;
+        }
+        
+        $mime_type = $image_info['mime'];
+        
+        // For JPEG files, strip EXIF data
+        if ($mime_type === 'image/jpeg') {
+            // Read image and re-encode without EXIF
+            $image = imagecreatefromjpeg($source_path);
+            if ($image) {
+                imagejpeg($image, $destination_path, 90);
+                imagedestroy($image);
+                return true;
+            }
+        } else if ($mime_type === 'image/png') {
+            // PNG doesn't embed EXIF the same way, but we can re-encode
+            $image = imagecreatefrompng($source_path);
+            if ($image) {
+                imagepng($image, $destination_path);
+                imagedestroy($image);
+                return true;
+            }
+        } else if ($mime_type === 'image/webp') {
+            $image = imagecreatefromwebp($source_path);
+            if ($image) {
+                imagewebp($image, $destination_path, 90);
+                imagedestroy($image);
+                return true;
+            }
+        }
+        
+        return true;
+    } catch (Exception $e) {
+        error_log('EXIF stripping error: ' . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to verify MIME type matches file content
+function verifyImageMimeType($file_path) {
+    if (function_exists('mime_content_type')) {
+        $detected_mime = mime_content_type($file_path);
+    } else if (function_exists('finfo_file')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $detected_mime = finfo_file($finfo, $file_path);
+        finfo_close($finfo);
+    } else {
+        return ['valid' => false, 'error' => 'Cannot determine file MIME type'];
+    }
+    
+    $allowed_mimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    
+    if (!in_array($detected_mime, $allowed_mimes)) {
+        return ['valid' => false, 'error' => "Invalid MIME type: {$detected_mime}"];
+    }
+    
+    return ['valid' => true, 'mime_type' => $detected_mime];
+}
+
 // Function to resize image
 function resizeImage($source, $destination, $max_width = 800, $max_height = 600, $quality = 85) {
     $image_info = getimagesize($source);
@@ -215,7 +304,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['images'])) {
     $errors = [];
     
     // Validate CSRF token if present
-    if (isset($_POST['csrf_token']) && !verify_csrf($_POST['csrf_token'])) {
+    if (isset($_POST['csrf_token']) && !SecurityValidator::getInstance()->validateCSRFToken($_POST['csrf_token'])) {
         security()->logSecurityEvent('CSRF_TOKEN_VALIDATION_FAILED', [
             'action' => 'file_upload'
         ], 'WARNING');
@@ -247,14 +336,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['images'])) {
             $upload_path = $upload_dir . $unique_filename;
             $watermark_path = $watermark_dir . $unique_filename;
             
-            // Additional security checks
+            // Enhanced security checks with multiple validations
+            // 1. Check if valid image format
             if (!getimagesize($file_tmp)) {
                 $errors[] = "File '{$file_name}' is not a valid image.";
                 continue;
             }
             
+            // 2. Verify MIME type matches file content
+            $mime_validation = verifyImageMimeType($file_tmp);
+            if (!$mime_validation['valid']) {
+                $errors[] = "File '{$file_name}': " . $mime_validation['error'];
+                continue;
+            }
+            
+            // 3. Validate image dimensions
+            $dimension_validation = validateImageDimensions($file_tmp, 400, 300, 4000, 4000);
+            if (!$dimension_validation['valid']) {
+                $errors[] = "File '{$file_name}': " . $dimension_validation['error'];
+                continue;
+            }
+            
             // Move uploaded file
             if (move_uploaded_file($file_tmp, $upload_path)) {
+                // Strip EXIF data for privacy protection
+                stripEXIFData($upload_path, $upload_path);
+                
                 // Resize main image
                 if (resizeImage($upload_path, $upload_path, 1200, 900, 90)) {
                     // Create multiple thumbnail sizes

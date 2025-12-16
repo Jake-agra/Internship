@@ -13,27 +13,33 @@ $error_message = '';
 $success_message = '';
 
 if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
         $error_message = 'Invalid request. Please refresh and try again.';
     } else {
     $email = trim($_POST['email']);
     $password = $_POST['pass'];
+    $selected_role = strtolower(trim($_POST['role'] ?? ''));
 
     if(empty($email) || empty($password)){
         $error_message = "Please fill in all fields";
     } else {
         // Prepare and execute the query with role information
-        $stmt = $conn->prepare("SELECT u.id, u.email, u.password, u.role_id, r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.email = ? AND u.is_active = TRUE");
+        $stmt = $conn->prepare("SELECT u.id, u.email, u.password, u.role_id, u.email_verified, r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.email = ? AND u.is_active = TRUE");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->store_result();
 
         if($stmt->num_rows === 1){
-            $stmt->bind_result($id, $db_email, $db_password, $role_id, $role_name);
+            $stmt->bind_result($id, $db_email, $db_password, $role_id, $email_verified, $role_name);
             $stmt->fetch();
             
-            // Verify the password
-            if(password_verify($password, $db_password)){
+            // If user specified a role on login, ensure the account matches that role
+            if (!empty($selected_role) && strtolower($role_name) !== $selected_role) {
+                $error_message = "No account with that role was found for this email.";
+            } elseif(!$email_verified) {
+                $error_message = "Please verify your email address first. Check your inbox for the verification link.";
+            } elseif(password_verify($password, $db_password)){
                 // Set session variables
                 $_SESSION['user_id'] = $id;
                 $_SESSION['user_email'] = $db_email;
@@ -48,14 +54,14 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
                 $update_login->execute();
                 $update_login->close();
             
-                // Role-based redirect
-                if($role_name === 'admin') {
-                    header("Location: admin/dashboard.php");
-                } elseif($role_name === 'agent') {
-                    header("Location: agent/dashboard.php"); // We'll create this
-                } else {
-                    header("Location: client/dashboard.php"); // We'll create this
-                }
+                    // Role-based redirect
+                    if($role_name === 'admin') {
+                        header("Location: admin/dashboard.php");
+                    } elseif($role_name === 'agent') {
+                        header("Location: agent/dashboard.php");
+                    } else {
+                        header("Location: client/dashboard.php");
+                    }
                 exit();
             } else {
                 $error_message = "Invalid email or password";
@@ -188,7 +194,7 @@ body {
         <?php endif; ?>
 
         <form method="POST" id="loginForm">
-            <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
+            <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
             <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
                 <label for="email"><i class="fas fa-envelope me-2"></i>Email Address</label>
@@ -200,6 +206,14 @@ body {
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="me-3" style="min-width:180px;">
+                    <label for="role" class="form-label mb-1">Account Type</label>
+                    <select class="form-select form-select-sm" id="role" name="role">
+                        <option value="admin">Admin</option>
+                        <option value="agent">Agent</option>
+                        <option value="client">Client</option>
+                    </select>
+                </div>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="remember">
                     <label class="form-check-label" for="remember">

@@ -18,7 +18,7 @@ $response = ['success' => false, 'message' => ''];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate CSRF token from header or body
     $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
-    if (!$csrf || !verify_csrf($csrf)) {
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
         echo json_encode(['success' => false, 'message' => 'Invalid CSRF token']);
         exit();
     }

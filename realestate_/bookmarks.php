@@ -20,26 +20,12 @@ $success = false;
 
 // Handle bookmark removal
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_bookmark'])) {
-    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
         $success = false;
         $message = 'Invalid request. Please refresh and try again.';
     } else {
     $property_id = (int)$_POST['property_id'];
-    
-    // Check if bookmarks table exists, if not create it
-    $table_check = $conn->query("SHOW TABLES LIKE 'bookmarks'");
-    if ($table_check->num_rows == 0) {
-        $create_bookmarks = "CREATE TABLE bookmarks (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
-            property_id INT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-            UNIQUE KEY unique_bookmark (user_id, property_id)
-        )";
-        $conn->query($create_bookmarks);
-    }
     
     $remove_stmt = $conn->prepare("DELETE FROM bookmarks WHERE user_id = ? AND property_id = ?");
     $remove_stmt->bind_param("ii", $user_id, $property_id);
@@ -66,21 +52,6 @@ JOIN property_types pt ON p.property_type_id = pt.id
 JOIN locations l ON p.location_id = l.id
 WHERE b.user_id = ? AND p.status = 'available'
 ORDER BY b.created_at DESC";
-
-// Check if bookmarks table exists, if not create it
-$table_check = $conn->query("SHOW TABLES LIKE 'bookmarks'");
-if ($table_check->num_rows == 0) {
-    $create_bookmarks = "CREATE TABLE bookmarks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        property_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-        UNIQUE KEY unique_bookmark (user_id, property_id)
-    )";
-    $conn->query($create_bookmarks);
-}
 
 $bookmark_stmt = $conn->prepare($bookmark_query);
 $bookmark_stmt->bind_param("i", $user_id);
@@ -404,7 +375,7 @@ $bookmark_stmt->close();
                                 <span class="property-badge"><?= htmlspecialchars($property['type_name']); ?></span>
                                 <div class="bookmark-actions">
                                     <form method="POST" style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
+                                        <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
                                         <input type="hidden" name="property_id" value="<?= $property['id']; ?>">
                                         <button type="submit" name="remove_bookmark" class="btn btn-sm btn-danger" 
                                                 onclick="return confirm('Are you sure you want to remove this property from your bookmarks?')">

@@ -42,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Get inquiries
-$inquiries_query = "SELECT i.id, i.message, i.contact_phone, i.contact_email, i.status, i.created_at,
+// Get inquiries (using correct column names: phone and email, not contact_phone and contact_email)
+$inquiries_query = "SELECT i.id, i.message, i.phone, i.email, i.name, i.status, i.created_at,
                            p.propertiesname, p.id as property_id,
                            u.first_name, u.last_name
                     FROM inquiries i
@@ -240,8 +240,8 @@ $pending_inquiries = $conn->query("SELECT COUNT(*) as count FROM inquiries WHERE
                                     <strong><?= htmlspecialchars($inquiry['propertiesname'] ?: 'Property Deleted'); ?></strong>
                                 </td>
                                 <td>
-                                    <div><?= htmlspecialchars(($inquiry['first_name'] ?: 'Guest') . ' ' . ($inquiry['last_name'] ?: '')); ?></div>
-                                    <small class="text-muted"><?= htmlspecialchars($inquiry['contact_email']); ?></small>
+                                    <div><?= htmlspecialchars(($inquiry['name'] ?: ($inquiry['first_name'] ?: 'Guest')) . ' ' . ($inquiry['last_name'] ?: '')); ?></div>
+                                    <small class="text-muted"><?= htmlspecialchars($inquiry['email'] ?: ($inquiry['first_name'] ? 'User Account' : 'Guest')); ?></small>
                                 </td>
                                 <td>
                                     <div style="max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">

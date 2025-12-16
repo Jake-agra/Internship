@@ -2,6 +2,7 @@
 session_start();
 include('./Database/connection.php');
 include('./includes/route.php');
+include('./includes/security.php');
 
 // Check if user is logged in
 if (!isLoggedIn()) {
@@ -15,40 +16,148 @@ $success = false;
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-    $first_name = trim($_POST['first_name']);
-    $last_name = trim($_POST['last_name']);
-    $phone = trim($_POST['phone']);
-    $current_password = $_POST['current_password'];
-    $new_password = $_POST['new_password'];
-    $confirm_password = $_POST['confirm_password'];
-    
-    if (empty($first_name) || empty($last_name) || empty($phone)) {
-        $message = 'Please fill in all required fields.';
+    // Validate CSRF token
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
+        $message = 'Invalid security token. Please refresh and try again.';
     } else {
-        // Check if password change is requested
-        if (!empty($new_password)) {
-            if (empty($current_password)) {
-                $message = 'Please enter your current password to change it.';
-            } elseif ($new_password !== $confirm_password) {
-                $message = 'New passwords do not match.';
-            } elseif (strlen($new_password) < 6) {
-                $message = 'New password must be at least 6 characters long.';
-            } else {
-                // Verify current password
-                $check_stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
-                $check_stmt->bind_param("i", $user_id);
-                $check_stmt->execute();
-                $result = $check_stmt->get_result();
-                $user = $result->fetch_assoc();
-                $check_stmt->close();
+        $first_name = trim($_POST['first_name']);
+        $last_name = trim($_POST['last_name']);
+        $email = trim($_POST['email']);
+        $phone = trim($_POST['phone']);
+        $current_password = $_POST['current_password'] ?? '';
+        $new_password = $_POST['new_password'] ?? '';
+        $confirm_password = $_POST['confirm_password'] ?? '';
+        
+        // Comprehensive validation
+        $validationRules = [
+            'first_name' => ['min' => 2, 'max' => 100],
+            'last_name' => ['min' => 2, 'max' => 100],
+            'email' => ['type' => 'email'],
+            'phone' => ['max' => 20]
+        ];
+        
+        $inputData = [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'phone' => $phone
+        ];
+        
+        $validationResult = SecurityValidator::getInstance()->validateInput($inputData, $validationRules);
+        
+        if (!$validationResult['valid']) {
+            $message = 'Validation error: ' . implode(', ', $validationResult['errors']);
+        } else {
+            // Check if email is already used by another user
+            if ($email !== $user['email']) {
+                $email_check = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+                $email_check->bind_param("si", $email, $user_id);
+                $email_check->execute();
+                $email_check->store_result();
                 
-                if (!password_verify($current_password, $user['password'])) {
-                    $message = 'Current password is incorrect.';
+                if ($email_check->num_rows > 0) {
+                    $message = 'This email is already registered to another account.';
+                    $email_check->close();
                 } else {
-                    // Update with new password
-                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-                    $update_stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, phone = ?, password = ? WHERE id = ?");
-                    $update_stmt->bind_param("ssssi", $first_name, $last_name, $phone, $hashed_password, $user_id);
+                    $email_check->close();
+                    
+                    // Handle password change if requested
+                    if (!empty($new_password)) {
+                        if (empty($current_password)) {
+                            $message = 'Please enter your current password to change it.';
+                        } elseif ($new_password !== $confirm_password) {
+                            $message = 'New passwords do not match.';
+                        } else {
+                            // Validate new password strength
+                            $passwordValidation = SecurityValidator::getInstance()->validatePassword($new_password);
+                            if (!$passwordValidation['valid']) {
+                                $message = 'Password: ' . $passwordValidation['errors'][0];
+                            } else {
+                                // Verify current password
+                                $check_stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+                                $check_stmt->bind_param("i", $user_id);
+                                $check_stmt->execute();
+                                $result = $check_stmt->get_result();
+                                $current_user = $result->fetch_assoc();
+                                $check_stmt->close();
+                                
+                                if (!password_verify($current_password, $current_user['password'])) {
+                                    $message = 'Current password is incorrect.';
+                                } else {
+                                    // Update with new password
+                                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                                    $update_stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ?, password = ? WHERE id = ?");
+                                    $update_stmt->bind_param("sssssi", $first_name, $last_name, $email, $phone, $hashed_password, $user_id);
+                                    
+                                    if ($update_stmt->execute()) {
+                                        $success = true;
+                                        $message = 'Profile updated successfully!';
+                                        // Update session email if changed
+                                        $_SESSION['user_email'] = $email;
+                                    } else {
+                                        $message = 'Failed to update profile. Please try again.';
+                                    }
+                                    $update_stmt->close();
+                                }
+                            }
+                        }
+                    } else {
+                        // Update without password change
+                        $update_stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE id = ?");
+                        $update_stmt->bind_param("ssssi", $first_name, $last_name, $email, $phone, $user_id);
+                        
+                        if ($update_stmt->execute()) {
+                            $success = true;
+                            $message = 'Profile updated successfully!';
+                            // Update session email if changed
+                            $_SESSION['user_email'] = $email;
+                        } else {
+                            $message = 'Failed to update profile. Please try again.';
+                        }
+                        $update_stmt->close();
+                    }
+                }
+            } else {
+                // Email not changed, handle password only
+                if (!empty($new_password)) {
+                    if (empty($current_password)) {
+                        $message = 'Please enter your current password to change it.';
+                    } elseif ($new_password !== $confirm_password) {
+                        $message = 'New passwords do not match.';
+                    } else {
+                        $passwordValidation = SecurityValidator::getInstance()->validatePassword($new_password);
+                        if (!$passwordValidation['valid']) {
+                            $message = 'Password: ' . $passwordValidation['errors'][0];
+                        } else {
+                            $check_stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+                            $check_stmt->bind_param("i", $user_id);
+                            $check_stmt->execute();
+                            $result = $check_stmt->get_result();
+                            $current_user = $result->fetch_assoc();
+                            $check_stmt->close();
+                            
+                            if (!password_verify($current_password, $current_user['password'])) {
+                                $message = 'Current password is incorrect.';
+                            } else {
+                                $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                                $update_stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, phone = ?, password = ? WHERE id = ?");
+                                $update_stmt->bind_param("ssssi", $first_name, $last_name, $phone, $hashed_password, $user_id);
+                                
+                                if ($update_stmt->execute()) {
+                                    $success = true;
+                                    $message = 'Profile updated successfully!';
+                                } else {
+                                    $message = 'Failed to update profile. Please try again.';
+                                }
+                                $update_stmt->close();
+                            }
+                        }
+                    }
+                } else {
+                    // Update without password change
+                    $update_stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, phone = ? WHERE id = ?");
+                    $update_stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
                     
                     if ($update_stmt->execute()) {
                         $success = true;
@@ -59,18 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                     $update_stmt->close();
                 }
             }
-        } else {
-            // Update without password change
-            $update_stmt = $conn->prepare("UPDATE users SET first_name = ?, last_name = ?, phone = ? WHERE id = ?");
-            $update_stmt->bind_param("sssi", $first_name, $last_name, $phone, $user_id);
-            
-            if ($update_stmt->execute()) {
-                $success = true;
-                $message = 'Profile updated successfully!';
-            } else {
-                $message = 'Failed to update profile. Please try again.';
-            }
-            $update_stmt->close();
         }
     }
 }
@@ -94,21 +191,6 @@ JOIN property_types pt ON p.property_type_id = pt.id
 JOIN locations l ON p.location_id = l.id
 WHERE b.user_id = ? AND p.status = 'available'
 ORDER BY b.created_at DESC";
-
-// Check if bookmarks table exists, if not create it
-$table_check = $conn->query("SHOW TABLES LIKE 'bookmarks'");
-if ($table_check->num_rows == 0) {
-    $create_bookmarks = "CREATE TABLE bookmarks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        property_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE,
-        UNIQUE KEY unique_bookmark (user_id, property_id)
-    )";
-    $conn->query($create_bookmarks);
-}
 
 $bookmark_stmt = $conn->prepare($bookmark_query);
 $bookmark_stmt->bind_param("i", $user_id);

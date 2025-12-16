@@ -2,6 +2,7 @@
 session_start();
 include('../Database/connection.php');
 include('../includes/route.php');
+include('../includes/security.php');
 
 // Check if user is logged in and is an agent
 if (!isLoggedIn()) {
@@ -21,6 +22,59 @@ if ($user_role === 'admin') {
 
 $user_id = getUserId();
 $user_email = getUserEmail();
+
+// Handle inquiry status update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_inquiry_status'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
+        $_SESSION['error_message'] = 'Invalid security token';
+    } else {
+        $inquiry_id = (int)$_POST['inquiry_id'];
+        $new_status = $_POST['status'] ?? 'pending';
+        
+        // Validate status
+        $allowed_statuses = ['pending', 'responded', 'rejected', 'closed'];
+        if (!in_array($new_status, $allowed_statuses)) {
+            $_SESSION['error_message'] = 'Invalid status';
+        } else {
+            // Update inquiry status
+            $update_stmt = $conn->prepare("UPDATE inquiries SET status = ? WHERE id = ? AND property_id IN (SELECT id FROM properties WHERE user_id = ?)");
+            $update_stmt->bind_param("sii", $new_status, $inquiry_id, $user_id);
+            
+            if ($update_stmt->execute()) {
+                $_SESSION['success_message'] = 'Inquiry status updated successfully';
+            } else {
+                $_SESSION['error_message'] = 'Failed to update inquiry status';
+            }
+            $update_stmt->close();
+        }
+    }
+    header('Location: dashboard.php');
+    exit();
+}
+
+// Handle property feature toggle
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_featured'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
+        $_SESSION['error_message'] = 'Invalid security token';
+    } else {
+        $property_id = (int)$_POST['property_id'];
+        
+        // Toggle featured status
+        $toggle_stmt = $conn->prepare("UPDATE properties SET is_featured = NOT is_featured WHERE id = ? AND user_id = ?");
+        $toggle_stmt->bind_param("ii", $property_id, $user_id);
+        
+        if ($toggle_stmt->execute()) {
+            $_SESSION['success_message'] = 'Property featured status updated';
+        } else {
+            $_SESSION['error_message'] = 'Failed to update property';
+        }
+        $toggle_stmt->close();
+    }
+    header('Location: dashboard.php');
+    exit();
+}
 
 // Get agent information
 $agent_info = null;
@@ -349,17 +403,14 @@ for ($i = 5; $i >= 0; $i--) {
         <a href="properties.php" class="nav-link">
             <i class="fas fa-home"></i> My Properties
         </a>
+        <a href="upload_property.php" class="nav-link">
+            <i class="fas fa-plus"></i> Upload Property
+        </a>
         <a href="inquiries.php" class="nav-link">
             <i class="fas fa-envelope"></i> Client Inquiries
             <?php if ($stats['pending_inquiries'] > 0): ?>
                 <span class="badge bg-warning ms-auto"><?= $stats['pending_inquiries']; ?></span>
             <?php endif; ?>
-        </a>
-        <a href="clients.php" class="nav-link">
-            <i class="fas fa-users"></i> My Clients
-        </a>
-        <a href="analytics.php" class="nav-link">
-            <i class="fas fa-chart-bar"></i> Analytics
         </a>
         <a href="../profile.php" class="nav-link">
             <i class="fas fa-user-cog"></i> Profile Settings
@@ -390,7 +441,7 @@ for ($i = 5; $i >= 0; $i--) {
                 <p class="mb-0">Manage your properties, track inquiries, and grow your real estate business.</p>
             </div>
             <div class="col-md-4 text-end">
-                <a href="../admin/add_property.php" class="btn btn-light btn-lg">
+                <a href="upload_property.php" class="btn btn-light btn-lg">
                     <i class="fas fa-plus me-2"></i>Add New Property
                 </a>
             </div>
@@ -472,7 +523,7 @@ for ($i = 5; $i >= 0; $i--) {
                                     </div>
                                     <div class="mt-2">
                                         <a href="../property_details.php?id=<?= $property['id']; ?>" class="btn btn-sm btn-outline-primary me-2">View</a>
-                                        <a href="../admin/edit_property.php?id=<?= $property['id']; ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        <a href="edit_property.php?id=<?= $property['id']; ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
                                     </div>
                                 </div>
                             </div>
@@ -484,7 +535,7 @@ for ($i = 5; $i >= 0; $i--) {
                     <i class="fas fa-home fa-3x text-muted mb-3"></i>
                     <h5>No Properties Yet</h5>
                     <p class="text-muted">Start by adding your first property listing.</p>
-                    <a href="../admin/add_property.php" class="btn btn-primary">Add Property</a>
+                    <a href="upload_property.php" class="btn btn-primary">Add Property</a>
                 </div>
             <?php endif; ?>
         </div>
@@ -546,7 +597,7 @@ for ($i = 5; $i >= 0; $i--) {
                     <i class="fas fa-plus fa-3x text-primary mb-3"></i>
                     <h6>Add New Property</h6>
                     <p class="text-muted small">List a new property for sale or rent</p>
-                    <a href="../admin/add_property.php" class="btn btn-primary btn-sm">Add Property</a>
+                    <a href="upload_property.php" class="btn btn-primary btn-sm">Add Property</a>
                 </div>
             </div>
         </div>

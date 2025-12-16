@@ -11,7 +11,8 @@ $error_message = '';
 $success_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
         $error_message = 'Invalid request. Please refresh and try again.';
     } else {
         $fname = trim($_POST['fnam']);
@@ -37,29 +38,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($check->num_rows > 0) {
                 $error_message = 'Email is already registered. Please use a different email.';
             } else {
-                // Get client role ID
-                $role_query = $conn->prepare("SELECT id FROM roles WHERE role_name = 'client'");
+                // Determine selected role (default client). Only allow admin creation when current session user is an admin.
+                $selected_role = strtolower(trim($_POST['role'] ?? 'client'));
+                $role_notice = '';
+                if ($selected_role === 'admin' && (empty($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin')) {
+                    // Prevent public admin creation
+                    $role_notice = ' Admin accounts must be created by an administrator; account created as Client.';
+                    $selected_role = 'client';
+                }
+
+                // Fetch role id from roles table
+                $role_query = $conn->prepare("SELECT id FROM roles WHERE role_name = ? LIMIT 1");
+                $role_query->bind_param("s", $selected_role);
                 $role_query->execute();
                 $role_result = $role_query->get_result();
                 $role_row = $role_result->fetch_assoc();
-                $client_role_id = $role_row['id'];
+                $client_role_id = $role_row['id'] ?? 3;
                 $role_query->close();
+
+                // Determine activation state: Agents require admin approval
+                $is_active = 1;
+                $pending_notice = '';
+                if ($selected_role === 'agent') {
+                    $is_active = 0; // pending admin approval
+                    $pending_notice = ' Your Agent account is pending administrator approval.';
+                }
 
                 // Hash password and insert user
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, phone, email, password, role_id) VALUES (?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssssi", $fname, $lname, $phone, $email, $hashed_password, $client_role_id);
+                // Generate email verification token
+                $verification_token = bin2hex(random_bytes(32));
+                
+                // Insert with explicit is_active flag (agents stored as inactive until approved)
+                $stmt = $conn->prepare("INSERT INTO users (first_name, last_name, phone, email, password, role_id, email_verification_token, email_verified, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)");
+                $stmt->bind_param("sssssisi", $fname, $lname, $phone, $email, $hashed_password, $client_role_id, $verification_token, $is_active);
 
                 if ($stmt->execute()) {
-                    $success_message = 'Registration successful! You can now login.';
+                    $success_message = 'Registration successful! Please check your email to verify your account.' . ($role_notice ? ' ' . $role_notice : '') . ($pending_notice ? ' ' . $pending_notice : '');
 
-                    // Send welcome email using Composer-based EmailService
+                    // Send verification email using Composer-based EmailService
                     try {
                         require_once 'includes/EmailService.php';
                         $emailService = new EmailService();
-                        $emailService->sendWelcomeEmail($fname . ' ' . $lname, $email);
+                        $emailService->sendVerificationEmail($fname . ' ' . $lname, $email, $verification_token);
                     } catch (Exception $e) {
-                        error_log('Welcome email failed for registration: ' . $e->getMessage());
+                        error_log('Verification email failed for registration: ' . $e->getMessage());
+                        // Still show success but warn about email issue
+                        $success_message .= ' (Note: Verification email may have failed - please contact support)';
                     }
 
                     // Clear form data on success
@@ -338,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
             
             <form action="register.php" method="POST" id="registerForm">
-                <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
+                <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-floating">
@@ -370,6 +395,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            placeholder="Phone Number" 
                            value="<?php echo isset($_POST['phonenum']) ? htmlspecialchars($_POST['phonenum']) : ''; ?>" required>
                     <label for="phone"><i class="fas fa-phone me-2"></i>Phone Number</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="client" <?php echo (isset($_POST['role']) && $_POST['role'] === 'client') ? 'selected' : 'selected'; ?>>Client</option>
+                        <option value="agent" <?php echo (isset($_POST['role']) && $_POST['role'] === 'agent') ? 'selected' : ''; ?>>Agent</option>
+                        <option value="admin" <?php echo (isset($_POST['role']) && $_POST['role'] === 'admin') ? 'selected' : ''; ?>>Admin</option>
+                    </select>
+                    <label for="role"><i class="fas fa-user-tag me-2"></i>Account Type *</label>
+                    <small class="text-muted d-block mt-1">
+                        <strong>Client:</strong> Browse and save properties<br>
+                        <strong>Agent:</strong> List properties (requires admin approval)<br>
+                        <strong>Admin:</strong> Full system access (admin session required)
+                    </small>
                 </div>
 
                 <div class="form-floating">

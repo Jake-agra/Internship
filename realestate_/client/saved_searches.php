@@ -2,6 +2,7 @@
 session_start();
 include('../Database/connection.php');
 include('../includes/route.php');
+include('../includes/security.php');
 
 // Check if user is logged in and is a client
 if (!isLoggedIn()) {
@@ -26,37 +27,52 @@ $message = '';
 $message_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    
-    switch ($action) {
-        case 'delete':
-            $search_id = (int)$_POST['search_id'];
-            $delete_stmt = $conn->prepare("DELETE FROM saved_searches WHERE id = ? AND user_id = ?");
-            $delete_stmt->bind_param("ii", $search_id, $user_id);
-            if ($delete_stmt->execute()) {
-                $message = "Saved search deleted successfully!";
-                $message_type = "success";
-            } else {
-                $message = "Error deleting saved search.";
-                $message_type = "danger";
-            }
-            $delete_stmt->close();
-            break;
-            
-        case 'toggle_active':
-            $search_id = (int)$_POST['search_id'];
-            $is_active = (int)$_POST['is_active'];
-            $toggle_stmt = $conn->prepare("UPDATE saved_searches SET is_active = ? WHERE id = ? AND user_id = ?");
-            $toggle_stmt->bind_param("iii", $is_active, $search_id, $user_id);
-            if ($toggle_stmt->execute()) {
-                $message = $is_active ? "Search alert activated!" : "Search alert deactivated!";
-                $message_type = "success";
-            } else {
-                $message = "Error updating search alert.";
-                $message_type = "danger";
-            }
-            $toggle_stmt->close();
-            break;
+    // Validate CSRF token
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
+        $message = "Invalid security token. Please try again.";
+        $message_type = "danger";
+    } else {
+        $action = $_POST['action'] ?? '';
+        
+        switch ($action) {
+            case 'delete':
+                $search_id = (int)$_POST['search_id'];
+                $delete_stmt = $conn->prepare("DELETE FROM saved_searches WHERE id = ? AND user_id = ?");
+                $delete_stmt->bind_param("ii", $search_id, $user_id);
+                if ($delete_stmt->execute()) {
+                    $message = "Saved search deleted successfully!";
+                    $message_type = "success";
+                } else {
+                    $message = "Error deleting saved search.";
+                    $message_type = "danger";
+                }
+                $delete_stmt->close();
+                break;
+                
+            case 'toggle_alerts':
+                $search_id = (int)$_POST['search_id'];
+                $email_alerts = isset($_POST['email_alerts']) ? 1 : 0;
+                $alert_frequency = $_POST['alert_frequency'] ?? 'weekly';
+                
+                // Validate alert frequency
+                if (!in_array($alert_frequency, ['daily', 'weekly', 'monthly'])) {
+                    $message = "Invalid alert frequency.";
+                    $message_type = "danger";
+                    break;
+                }
+                
+                $toggle_stmt = $conn->prepare("UPDATE saved_searches SET email_alerts = ?, alert_frequency = ? WHERE id = ? AND user_id = ?");
+                $toggle_stmt->bind_param("isii", $email_alerts, $alert_frequency, $search_id, $user_id);
+                if ($toggle_stmt->execute()) {
+                    $message = "Alert settings updated successfully!";
+                    $message_type = "success";
+                } else {
+                    $message = "Error updating alert settings.";
+                    $message_type = "danger";
+                }
+                $toggle_stmt->close();
+                break;
             
         case 'save_new':
             $search_name = trim($_POST['search_name']);
@@ -75,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $save_stmt->close();
             }
             break;
+        }
     }
 }
 
@@ -316,7 +333,7 @@ $locations = $locations_result->fetch_all(MYSQLI_ASSOC);
         <a href="inquiries.php" class="nav-link">
             <i class="fas fa-envelope"></i> My Inquiries
         </a>
-        <a href="../profile.php" class="nav-link">
+        <a href="profile.php" class="nav-link">
             <i class="fas fa-user-cog"></i> Profile Settings
         </a>
         <hr class="my-3">

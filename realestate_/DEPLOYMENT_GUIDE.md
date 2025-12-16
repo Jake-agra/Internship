@@ -18,7 +18,7 @@
 CREATE DATABASE realestate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Import schema
-mysql -u root -p realestate < Database/realestate_complete.sql
+mysql -u root -p realestate < Database/realestate.sql
 ```
 
 ### **Step 2: Configure Database Connection**

@@ -15,6 +15,22 @@ if (!$property_id) {
     exit();
 }
 
+// If user is agent, verify property ownership
+$user_id = getUserId();
+if (isAgent() && !isAdmin()) {
+    $verify_stmt = $conn->prepare("SELECT id FROM properties WHERE id = ? AND user_id = ?");
+    $verify_stmt->bind_param("ii", $property_id, $user_id);
+    $verify_stmt->execute();
+    $verify_result = $verify_stmt->get_result();
+    
+    if ($verify_result->num_rows === 0) {
+        $verify_stmt->close();
+        header('Location: ../agent/properties.php');
+        exit();
+    }
+    $verify_stmt->close();
+}
+
 $message = '';
 $success = false;
 

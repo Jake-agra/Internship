@@ -8,56 +8,54 @@ $message = '';
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
         $message = 'Invalid request. Please refresh and try again.';
     } else {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $phone = trim($_POST['phone']);
-    $subject = trim($_POST['subject']);
-    $message_text = trim($_POST['message']);
-    
-    if (empty($name) || empty($email) || empty($subject) || empty($message_text)) {
-        $message = 'Please fill in all required fields.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = 'Please enter a valid email address.';
-    } else {
-        // Check if contact_messages table exists, if not create it
-        $table_check = $conn->query("SHOW TABLES LIKE 'contact_messages'");
-        if ($table_check->num_rows == 0) {
-            $create_table = "CREATE TABLE contact_messages (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(100) NOT NULL,
-                email VARCHAR(150) NOT NULL,
-                phone VARCHAR(20),
-                subject VARCHAR(200) NOT NULL,
-                message TEXT NOT NULL,
-                status ENUM('new', 'read', 'responded') DEFAULT 'new',
-                admin_response TEXT,
-                responded_by INT,
-                responded_at TIMESTAMP NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (responded_by) REFERENCES users(id) ON DELETE SET NULL
-            )";
-            $conn->query($create_table);
-        }
+        $name = trim($_POST['name']);
+        $email = trim($_POST['email']);
+        $phone = trim($_POST['phone']);
+        $subject = trim($_POST['subject']);
+        $message_text = trim($_POST['message']);
         
-        // Insert the contact message
-        $insert_stmt = $conn->prepare("INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
-        $insert_stmt->bind_param("sssss", $name, $email, $phone, $subject, $message_text);
+        // Comprehensive validation
+        $validationRules = [
+            'name' => ['min' => 3, 'max' => 100],
+            'email' => ['type' => 'email'],
+            'phone' => ['max' => 20],
+            'subject' => ['min' => 3, 'max' => 200],
+            'message_text' => ['min' => 10, 'max' => 5000]
+        ];
         
-        if ($insert_stmt->execute()) {
-            $success = true;
-            $message = 'Thank you for your message! We have received your inquiry and will get back to you soon.';
-            
-            // Clear form data on success
-            $_POST = array();
+        $inputData = [
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'subject' => $subject,
+            'message_text' => $message_text
+        ];
+        
+        $validationResult = SecurityValidator::getInstance()->validateInput($inputData, $validationRules);
+        
+        if (!$validationResult['valid']) {
+            $message = 'Validation error: ' . implode(', ', $validationResult['errors']);
         } else {
-            $message = 'Sorry, there was an error sending your message. Please try again or contact us directly.';
+            // Insert the contact message
+            $insert_stmt = $conn->prepare("INSERT INTO contact_messages (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)");
+            $insert_stmt->bind_param("sssss", $name, $email, $phone, $subject, $message_text);
+            
+            if ($insert_stmt->execute()) {
+                $success = true;
+                $message = 'Thank you for your message! We have received your inquiry and will get back to you soon.';
+                
+                // Clear form data on success
+                $_POST = array();
+            } else {
+                $message = 'Sorry, there was an error sending your message. Please try again or contact us directly.';
+            }
+            $insert_stmt->close();
         }
-        $insert_stmt->close();
     }
-}
 }
 ?>
 
@@ -328,7 +326,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
 
                     <form method="POST">
-                        <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
+                        <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name *</label>

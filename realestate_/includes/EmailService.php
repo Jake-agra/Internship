@@ -589,6 +589,308 @@ class EmailService {
         </html>";
     }
 
+    public function sendVerificationEmail($name, $email, $verification_token) {
+        try {
+            // Reset all addresses, attachments, and headers before sending
+            $this->mailer->clearAddresses();
+            $this->mailer->clearAttachments();
+            $this->mailer->clearReplyTos();
+            $this->mailer->clearCustomHeaders();
+
+            // Send to the new user
+            $this->mailer->addAddress($email, $name);
+            
+            $this->mailer->Subject = 'Verify Your Email Address - ' . $this->config['company_name'];
+            $this->mailer->Body = $this->getVerificationEmailTemplate($name, $email, $verification_token);
+            $this->mailer->AltBody = strip_tags($this->mailer->Body);
+            
+            return $this->mailer->send();
+            
+        } catch (Exception $e) {
+            error_log("Verification email failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function getVerificationEmailTemplate($name, $email, $verification_token) {
+        $companyName = htmlspecialchars($this->config['company_name']);
+        $companyEmail = htmlspecialchars($this->config['company_email']);
+        $websiteUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://" . $_SERVER['HTTP_HOST'];
+        $verificationUrl = $websiteUrl . '/verify_email.php?token=' . urlencode($verification_token);
+        
+        return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Verify Your Email Address</title>
+            <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    line-height: 1.6;
+                    color: #333;
+                    margin: 0;
+                    padding: 0;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                }
+                .header { 
+                    background: linear-gradient(135deg, #10b981, #059669); 
+                    color: white; 
+                    padding: 40px 20px; 
+                    text-align: center; 
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 28px;
+                    font-weight: bold;
+                }
+                .content { 
+                    padding: 40px 30px; 
+                    color: #444;
+                    font-size: 16px;
+                }
+                .verification-box {
+                    background-color: #f0fdf4;
+                    border-left: 4px solid #10b981;
+                    padding: 20px;
+                    margin: 25px 0;
+                    border-radius: 4px;
+                }
+                .verification-link {
+                    display: inline-block;
+                    background: #10b981;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 30px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                }
+                .verification-link:hover {
+                    background: #059669;
+                    color: white;
+                }
+                .footer { 
+                    background: #f8f9fa; 
+                    color: #666; 
+                    text-align: center; 
+                    padding: 20px; 
+                    border-top: 1px solid #ddd;
+                    font-size: 12px;
+                }
+                .footer a {
+                    color: #999;
+                    text-decoration: none;
+                }
+                .note {
+                    color: #999;
+                    font-size: 14px;
+                    margin-top: 20px;
+                    padding: 15px;
+                    background-color: #f8f9fa;
+                    border-radius: 4px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1><i class='✓'></i> Verify Your Email</h1>
+                </div>
+                <div class='content'>
+                    <p>Hello <strong>" . htmlspecialchars($name) . "</strong>,</p>
+                    
+                    <p>Thank you for registering with " . $companyName . "! To complete your registration and access all features, please verify your email address.</p>
+                    
+                    <div class='verification-box'>
+                        <strong>Click the button below to verify your email:</strong><br><br>
+                        <a href='" . htmlspecialchars($verificationUrl) . "' class='verification-link'>
+                            Verify Email Address
+                        </a>
+                    </div>
+                    
+                    <p><strong>Or copy and paste this link in your browser:</strong></p>
+                    <p style='word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 4px;'>
+                        <a href='" . htmlspecialchars($verificationUrl) . "' style='color: #2563eb;'>" . htmlspecialchars($verificationUrl) . "</a>
+                    </p>
+                    
+                    <div class='note'>
+                        <strong>Note:</strong> This verification link will expire in 24 hours. If you didn't create this account, please ignore this email.
+                    </div>
+                    
+                    <p>Best regards,<br><strong>The " . $companyName . " Team</strong></p>
+                </div>
+                <div class='footer'>
+                    &copy; " . date('Y') . " " . $companyName . ". All rights reserved.<br>
+                    <a href='" . $websiteUrl . "' style='color: #666;'>Visit our website</a> | 
+                    <a href='" . $websiteUrl . "/contact.php' style='color: #666;'>Contact us</a>
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+
+    public function sendReviewNotificationEmail($ownerName, $ownerEmail, $propertyName, $reviewerName, $rating, $reviewText) {
+        try {
+            // Reset all addresses, attachments, and headers before sending
+            $this->mailer->clearAddresses();
+            $this->mailer->clearAttachments();
+            $this->mailer->clearReplyTos();
+            $this->mailer->clearCustomHeaders();
+
+            // Send to property owner
+            $this->mailer->addAddress($ownerEmail, $ownerName);
+            
+            $this->mailer->Subject = 'New Review: ' . htmlspecialchars($propertyName);
+            $this->mailer->Body = $this->getReviewNotificationTemplate($ownerName, $propertyName, $reviewerName, $rating, $reviewText);
+            $this->mailer->AltBody = strip_tags($this->mailer->Body);
+            
+            return $this->mailer->send();
+            
+        } catch (Exception $e) {
+            error_log("Review notification email failed: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function getReviewNotificationTemplate($ownerName, $propertyName, $reviewerName, $rating, $reviewText) {
+        $companyName = htmlspecialchars($this->config['company_name']);
+        $stars = str_repeat('★', $rating) . str_repeat('☆', 5 - $rating);
+        $websiteUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://" . $_SERVER['HTTP_HOST'];
+        
+        return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>New Property Review</title>
+            <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    line-height: 1.6;
+                    color: #333;
+                    margin: 0;
+                    padding: 0;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    background: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                }
+                .header { 
+                    background: linear-gradient(135deg, #f59e0b, #d97706); 
+                    color: white; 
+                    padding: 40px 20px; 
+                    text-align: center; 
+                }
+                .header h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: bold;
+                }
+                .content { 
+                    padding: 40px 30px; 
+                    color: #444;
+                    font-size: 16px;
+                }
+                .review-box {
+                    background-color: #fff7ed;
+                    border-left: 4px solid #f59e0b;
+                    padding: 20px;
+                    margin: 20px 0;
+                    border-radius: 4px;
+                }
+                .stars {
+                    font-size: 24px;
+                    color: #f59e0b;
+                    margin: 10px 0;
+                    letter-spacing: 5px;
+                }
+                .reviewer-name {
+                    font-weight: bold;
+                    color: #2563eb;
+                    margin-bottom: 10px;
+                }
+                .review-text {
+                    line-height: 1.8;
+                    color: #555;
+                    padding: 15px;
+                    background-color: white;
+                    border-radius: 4px;
+                    margin: 15px 0;
+                }
+                .button {
+                    display: inline-block;
+                    background: #2563eb;
+                    color: white;
+                    text-decoration: none;
+                    padding: 12px 30px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    margin: 20px 0;
+                }
+                .button:hover {
+                    background: #1e40af;
+                    color: white;
+                }
+                .footer { 
+                    background: #f8f9fa; 
+                    color: #666; 
+                    text-align: center; 
+                    padding: 20px; 
+                    border-top: 1px solid #ddd;
+                    font-size: 12px;
+                }
+                .footer a {
+                    color: #999;
+                    text-decoration: none;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>⭐ New Review on Your Property</h1>
+                </div>
+                <div class='content'>
+                    <p>Hello <strong>" . htmlspecialchars($ownerName) . "</strong>,</p>
+                    
+                    <p>Great news! Someone has left a review on your property <strong>" . htmlspecialchars($propertyName) . "</strong>.</p>
+                    
+                    <div class='review-box'>
+                        <div class='reviewer-name'>Review by " . htmlspecialchars($reviewerName) . "</div>
+                        <div class='stars'>" . htmlspecialchars($stars) . " (" . $rating . "/5 stars)</div>
+                        
+                        <div class='review-text'>
+                            \"" . nl2br(htmlspecialchars(substr($reviewText, 0, 300))) . (strlen($reviewText) > 300 ? '...' : '') . "\"
+                        </div>
+                    </div>
+                    
+                    <p><a href='" . $websiteUrl . "/admin/dashboard.php' class='button'>View All Reviews</a></p>
+                    
+                    <p>Reviews help potential buyers and renters learn about your property. Thank you for maintaining an active listing!</p>
+                    
+                    <p>Best regards,<br><strong>The " . $companyName . " Team</strong></p>
+                </div>
+                <div class='footer'>
+                    &copy; " . date('Y') . " " . $companyName . ". All rights reserved.<br>
+                    <a href='" . $websiteUrl . "' style='color: #666;'>Visit our website</a>
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+
     public function getError() {
         return $this->error;
     }

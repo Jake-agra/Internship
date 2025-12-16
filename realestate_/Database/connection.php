@@ -18,6 +18,7 @@ $db_config = [
 ];
 
 // Create simple connection
+/** @var mysqli|null $conn */
 $conn = null;
 try {
     $conn = new mysqli($db_config['host'], $db_config['username'], $db_config['password'], $db_config['database'], $db_config['port']);
@@ -60,9 +61,29 @@ if ($conn) {
     }
 }
 
-// Simple helper functions
+/**
+ * Check if database connection is valid
+ * @return bool
+ */
+function isConnected() {
+    global $conn;
+    return $conn !== null && $conn instanceof mysqli;
+}
+
+/**
+ * Simple helper to execute queries safely
+ * @param string $sql
+ * @param array $params
+ * @return mixed
+ */
 function executeQuery($sql, $params = []) {
     global $conn;
+    
+    if (!isConnected()) {
+        error_log('Database connection is not available');
+        return false;
+    }
+    
     if (empty($params)) {
         return $conn->query($sql);
     }
@@ -74,9 +95,13 @@ function executeQuery($sql, $params = []) {
     return false;
 }
 
+/**
+ * Get last inserted ID
+ * @return int
+ */
 function getLastInsertId() {
     global $conn;
-    return $conn->insert_id;
+    return isConnected() ? $conn->insert_id : 0;
 }
 
 ?>

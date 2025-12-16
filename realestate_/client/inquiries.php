@@ -355,7 +355,7 @@ $properties = $properties_result->fetch_all(MYSQLI_ASSOC);
         <a href="inquiries.php" class="nav-link active">
             <i class="fas fa-envelope"></i> My Inquiries
         </a>
-        <a href="../profile.php" class="nav-link">
+        <a href="profile.php" class="nav-link">
             <i class="fas fa-user-cog"></i> Profile Settings
         </a>
         <hr class="my-3">

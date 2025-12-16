@@ -2,6 +2,7 @@
 session_start();
 include('../Database/connection.php');
 include('../includes/route.php');
+include('../includes/security.php');
 
 // Check if user is admin
 if (!isAdmin()) {
@@ -9,127 +10,154 @@ if (!isAdmin()) {
     exit();
 }
 
-// Date range for reports (default: last 30 days)
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
-
-// Get comprehensive statistics
-$stats = [];
-
-// Property statistics
-$property_stats = $conn->query("SELECT 
-    COUNT(*) as total_properties,
-    SUM(CASE WHEN status='available' THEN 1 ELSE 0 END) as available_properties,
-    SUM(CASE WHEN status='sold' THEN 1 ELSE 0 END) as sold_properties,
-    SUM(CASE WHEN status='rented' THEN 1 ELSE 0 END) as rented_properties,
-    SUM(CASE WHEN is_featured=1 THEN 1 ELSE 0 END) as featured_properties
-    FROM properties 
-    WHERE created_at BETWEEN '$start_date' AND '$end_date 23:59:59'");
-
-if ($property_stats) {
-    $stats['properties'] = $property_stats->fetch_assoc();
-    $property_stats->free();
+// Get time range
+$time_range = $_GET['time_range'] ?? 'month';
+$valid_ranges = ['week', 'month', 'quarter', 'year'];
+if (!in_array($time_range, $valid_ranges)) {
+    $time_range = 'month';
 }
 
-// User statistics
-$user_stats = $conn->query("SELECT 
-    COUNT(*) as total_users,
-    SUM(CASE WHEN r.role_name='agent' THEN 1 ELSE 0 END) as agents,
-    SUM(CASE WHEN r.role_name='client' THEN 1 ELSE 0 END) as clients,
-    SUM(CASE WHEN email_verified=1 THEN 1 ELSE 0 END) as verified_users
-    FROM users u 
-    JOIN roles r ON u.role_id = r.id 
-    WHERE u.created_at BETWEEN '$start_date' AND '$end_date 23:59:59'");
+// Calculate date range
+$date_from = match($time_range) {
+    'week' => date('Y-m-d', strtotime('-7 days')),
+    'month' => date('Y-m-d', strtotime('-30 days')),
+    'quarter' => date('Y-m-d', strtotime('-90 days')),
+    'year' => date('Y-m-d', strtotime('-365 days')),
+};
+$date_to = date('Y-m-d');
 
-if ($user_stats) {
-    $stats['users'] = $user_stats->fetch_assoc();
-    $user_stats->free();
-}
+// 1. Get total statistics
+$stats_query = "
+    SELECT 
+        (SELECT COUNT(*) FROM properties) as total_properties,
+        (SELECT COUNT(*) FROM properties WHERE is_active = 1) as active_properties,
+        (SELECT COUNT(*) FROM properties WHERE featured = 1) as featured_properties,
+        (SELECT COUNT(*) FROM users WHERE role = 'agent') as total_agents,
+        (SELECT COUNT(*) FROM users WHERE role = 'client') as total_clients,
+        (SELECT COUNT(*) FROM inquiries) as total_inquiries,
+        (SELECT COUNT(*) FROM inquiries WHERE created_at >= ?) as inquiries_period,
+        (SELECT COUNT(*) FROM bookmarks) as total_bookmarks,
+        (SELECT AVG(rating) FROM property_reviews) as avg_rating
+";
+$stats_stmt = $conn->prepare($stats_query);
+$stats_stmt->bind_param("s", $date_from);
+$stats_stmt->execute();
+$stats = $stats_stmt->get_result()->fetch_assoc();
+$stats_stmt->close();
 
-// Inquiry statistics
-$inquiry_stats = $conn->query("SELECT 
-    COUNT(*) as total_inquiries,
-    SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) as pending_inquiries,
-    SUM(CASE WHEN status='responded' THEN 1 ELSE 0 END) as responded_inquiries
-    FROM inquiries 
-    WHERE created_at BETWEEN '$start_date' AND '$end_date 23:59:59'");
-
-if ($inquiry_stats) {
-    $stats['inquiries'] = $inquiry_stats->fetch_assoc();
-    $inquiry_stats->free();
-}
-
-// Revenue statistics (based on sold properties)
-$revenue_stats = $conn->query("SELECT 
-    COUNT(*) as sales_count,
-    SUM(pr.amount) as total_revenue,
-    AVG(pr.amount) as avg_sale_price,
-    MAX(pr.amount) as highest_sale,
-    MIN(pr.amount) as lowest_sale
+// 2. Get property statistics
+$property_stats_query = "
+    SELECT 
+        pt.type_name,
+        COUNT(p.id) as count,
+        AVG(pr.price) as avg_price,
+        COUNT(CASE WHEN p.featured = 1 THEN 1 END) as featured_count
     FROM properties p
-    JOIN prices pr ON p.price_id = pr.id
-    WHERE p.status = 'sold' AND p.updated_at BETWEEN '$start_date' AND '$end_date 23:59:59'");
+    LEFT JOIN property_types pt ON p.property_type_id = pt.id
+    LEFT JOIN prices pr ON p.id = pr.property_id
+    GROUP BY pt.id, pt.type_name
+    ORDER BY count DESC
+    LIMIT 10
+";
+$property_stats_result = $conn->query($property_stats_query);
+$property_stats = $property_stats_result ? $property_stats_result->fetch_all(MYSQLI_ASSOC) : [];
 
-if ($revenue_stats) {
-    $stats['revenue'] = $revenue_stats->fetch_assoc();
-    $revenue_stats->free();
-}
+// 3. Get inquiry trend data
+$inquiry_trend_query = "
+    SELECT 
+        DATE(created_at) as date,
+        COUNT(*) as count
+    FROM inquiries
+    WHERE created_at >= ?
+    GROUP BY DATE(created_at)
+    ORDER BY date ASC
+";
+$inquiry_trend_stmt = $conn->prepare($inquiry_trend_query);
+$inquiry_trend_stmt->bind_param("s", $date_from);
+$inquiry_trend_stmt->execute();
+$inquiry_trends = $inquiry_trend_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$inquiry_trend_stmt->close();
 
-// Top performing agents
-$top_agents = [];
-$agent_query = "SELECT 
-    u.first_name, u.last_name, u.email,
-    COUNT(p.id) as properties_count,
-    SUM(CASE WHEN p.status='sold' THEN 1 ELSE 0 END) as sales_count,
-    AVG(pr.amount) as avg_property_value
+// 4. Get inquiry status breakdown
+$inquiry_status_query = "
+    SELECT 
+        status,
+        COUNT(*) as count
+    FROM inquiries
+    WHERE created_at >= ?
+    GROUP BY status
+";
+$inquiry_status_stmt = $conn->prepare($inquiry_status_query);
+$inquiry_status_stmt->bind_param("s", $date_from);
+$inquiry_status_stmt->execute();
+$inquiry_statuses = $inquiry_status_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$inquiry_status_stmt->close();
+
+// 5. Get top properties by inquiries
+$top_properties_query = "
+    SELECT 
+        p.title,
+        p.id,
+        COUNT(i.id) as inquiry_count,
+        COUNT(b.id) as bookmark_count,
+        pr.price
+    FROM properties p
+    LEFT JOIN inquiries i ON p.id = i.property_id
+    LEFT JOIN bookmarks b ON p.id = b.property_id
+    LEFT JOIN prices pr ON p.id = pr.property_id
+    WHERE p.created_at >= ?
+    GROUP BY p.id
+    ORDER BY inquiry_count DESC
+    LIMIT 10
+";
+$top_properties_stmt = $conn->prepare($top_properties_query);
+$top_properties_stmt->bind_param("s", $date_from);
+$top_properties_stmt->execute();
+$top_properties = $top_properties_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$top_properties_stmt->close();
+
+// 6. Get agent performance
+$agent_performance_query = "
+    SELECT 
+        CONCAT(u.first_name, ' ', u.last_name) as agent_name,
+        u.id as agent_id,
+        COUNT(DISTINCT p.id) as properties_listed,
+        COUNT(DISTINCT i.id) as inquiries_received,
+        COUNT(DISTINCT b.id) as bookmarks_received,
+        COUNT(CASE WHEN i.created_at >= ? THEN 1 END) as recent_inquiries
     FROM users u
-    JOIN roles r ON u.role_id = r.id
-    LEFT JOIN properties p ON u.id = p.user_id
-    LEFT JOIN prices pr ON p.price_id = pr.id
-    WHERE r.role_name = 'agent' AND u.is_active = 1
-    GROUP BY u.id
-    ORDER BY sales_count DESC, properties_count DESC
-    LIMIT 5";
+    LEFT JOIN properties p ON u.id = p.agent_id
+    LEFT JOIN inquiries i ON p.id = i.property_id
+    LEFT JOIN bookmarks b ON p.id = b.property_id
+    WHERE u.role = 'agent'
+    GROUP BY u.id, u.first_name, u.last_name
+    ORDER BY properties_listed DESC
+    LIMIT 10
+";
+$agent_perf_stmt = $conn->prepare($agent_performance_query);
+$agent_perf_stmt->bind_param("s", $date_from);
+$agent_perf_stmt->execute();
+$agent_performance = $agent_perf_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$agent_perf_stmt->close();
 
-if ($result = $conn->query($agent_query)) {
-    $top_agents = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-}
+// 7. Get review statistics
+$review_stats_query = "
+    SELECT 
+        ROUND(AVG(rating), 2) as avg_rating,
+        MIN(rating) as min_rating,
+        MAX(rating) as max_rating,
+        COUNT(*) as total_reviews,
+        COUNT(CASE WHEN is_approved = 1 THEN 1 END) as approved_reviews,
+        COUNT(CASE WHEN created_at >= ? THEN 1 END) as recent_reviews
+    FROM property_reviews
+";
+$review_stats_stmt = $conn->prepare($review_stats_query);
+$review_stats_stmt->bind_param("s", $date_from);
+$review_stats_stmt->execute();
+$review_stats = $review_stats_stmt->get_result()->fetch_assoc();
+$review_stats_stmt->close();
 
-// Popular property types
-$property_types = [];
-$type_query = "SELECT 
-    pt.type_name,
-    COUNT(p.id) as property_count,
-    SUM(CASE WHEN p.status='sold' THEN 1 ELSE 0 END) as sold_count,
-    AVG(pr.amount) as avg_price
-    FROM property_types pt
-    LEFT JOIN properties p ON pt.id = p.property_type_id
-    LEFT JOIN prices pr ON p.price_id = pr.id
-    WHERE p.created_at BETWEEN '$start_date' AND '$end_date 23:59:59'
-    GROUP BY pt.id
-    ORDER BY property_count DESC";
-
-if ($result = $conn->query($type_query)) {
-    $property_types = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-}
-
-// Monthly trends (last 12 months)
-$monthly_data = [];
-$monthly_query = "SELECT 
-    DATE_FORMAT(created_at, '%Y-%m') as month,
-    COUNT(*) as properties_added,
-    SUM(CASE WHEN status='sold' THEN 1 ELSE 0 END) as properties_sold
-    FROM properties 
-    WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-    GROUP BY DATE_FORMAT(created_at, '%Y-%m')
-    ORDER BY month DESC";
-
-if ($result = $conn->query($monthly_query)) {
-    $monthly_data = $result->fetch_all(MYSQLI_ASSOC);
-    $result->free();
-}
+?>
 ?>
 
 <!DOCTYPE html>

@@ -33,6 +33,7 @@ $property_query = "SELECT
     p.id, p.propertiesname, p.description, p.price_id, p.user_id, p.property_type_id, p.location_id, 
     p.status, p.bedrooms, p.bathrooms, p.area_sqft, p.year_built, p.parking_spaces, p.images, 
     p.features, p.address_details, p.is_featured, p.views_count, p.created_at, p.updated_at,
+    p.video_url, p.virtual_tour_url,
     pr.amount as price, pr.currency, pr.price_type, pr.is_negotiable,
     pt.type_name as property_type,
     l.city, l.region, l.country, l.postal_code,
@@ -68,7 +69,8 @@ $inquiry_message = '';
 $inquiry_success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
-    if (!isset($_POST['csrf_token']) || !verify_csrf($_POST['csrf_token'])) {
+    $csrf = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+    if (!$csrf || !SecurityValidator::getInstance()->validateCSRFToken($csrf)) {
         $inquiry_message = 'Invalid request. Please refresh and try again.';
     } else {
     $client_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
@@ -82,9 +84,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_inquiry'])) {
     } elseif (!filter_var($contact_email, FILTER_VALIDATE_EMAIL)) {
         $inquiry_message = 'Please enter a valid email address.';
     } else {
-        // Insert inquiry
-        $inquiry_stmt = $conn->prepare("INSERT INTO inquiries (property_id, client_id, message, contact_phone, contact_email, status) VALUES (?, ?, ?, ?, ?, 'pending')");
-        $inquiry_stmt->bind_param("iisss", $property_id, $client_id, $message, $contact_phone, $contact_email);
+        // Insert inquiry (using correct column names: name and email, not contact_name and contact_email)
+        $inquiry_stmt = $conn->prepare("INSERT INTO inquiries (property_id, client_id, name, email, phone, message, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')");
+        $inquiry_stmt->bind_param("iissss", $property_id, $client_id, $contact_name, $contact_email, $contact_phone, $message);
         
         if ($inquiry_stmt->execute()) {
             $inquiry_success = true;
@@ -535,6 +537,60 @@ if (empty($property_features)) {
                 </div>
             </div>
 
+            <!-- Video & Virtual Tour Section -->
+            <?php if (!empty($property['video_url']) || !empty($property['virtual_tour_url'])): ?>
+            <div class="mb-4">
+                <ul class="nav nav-tabs mb-3" id="mediaTab">
+                    <?php if (!empty($property['video_url'])): ?>
+                    <li class="nav-item">
+                        <button class="nav-link active" id="video-tab" data-bs-toggle="tab" data-bs-target="#videoContent" type="button">
+                            <i class="fas fa-video me-2"></i>Video Tour
+                        </button>
+                    </li>
+                    <?php endif; ?>
+                    <?php if (!empty($property['virtual_tour_url'])): ?>
+                    <li class="nav-item">
+                        <button class="nav-link <?= empty($property['video_url']) ? 'active' : ''; ?>" id="tour-tab" data-bs-toggle="tab" data-bs-target="#tourContent" type="button">
+                            <i class="fas fa-vr-cardboard me-2"></i>Virtual Tour
+                        </button>
+                    </li>
+                    <?php endif; ?>
+                </ul>
+
+                <div class="tab-content" id="mediaTabContent">
+                    <?php if (!empty($property['video_url'])): ?>
+                    <div class="tab-pane fade show active" id="videoContent">
+                        <div class="ratio ratio-16x9 mb-3">
+                            <?php 
+                            $video_url = $property['video_url'];
+                            // Check if it's a YouTube URL
+                            if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\s]{11})/i', $video_url, $matches)) {
+                                $youtube_id = $matches[1];
+                            ?>
+                            <iframe src="https://www.youtube.com/embed/<?= htmlspecialchars($youtube_id); ?>" allowfullscreen="" loading="lazy"></iframe>
+                            <?php } else { ?>
+                            <video controls>
+                                <source src="<?= htmlspecialchars($video_url); ?>" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <?php } ?>
+                        </div>
+                        <p class="text-muted small">Professional property video tour</p>
+                    </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($property['virtual_tour_url'])): ?>
+                    <div class="tab-pane fade <?= empty($property['video_url']) ? 'show active' : ''; ?>" id="tourContent">
+                        <div class="ratio ratio-16x9 mb-3">
+                            <iframe src="<?= htmlspecialchars($property['virtual_tour_url']); ?>" allowfullscreen="" loading="lazy"></iframe>
+                        </div>
+                        <p class="text-muted small">Interactive 360° virtual tour</p>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Property Description -->
             <div class="property-details">
                 <h3 class="mb-4">Property Description</h3>
@@ -652,47 +708,6 @@ if (empty($property_features)) {
 
         <!-- Right Column -->
         <div class="col-lg-4">
-            <!-- Contact Form -->
-            <div class="contact-form">
-                <h4 class="mb-4">Contact Agent</h4>
-                
-                <?php if ($inquiry_message): ?>
-                    <div class="alert <?= $inquiry_success ? 'alert-success' : 'alert-danger'; ?>">
-                        <?= htmlspecialchars($inquiry_message); ?>
-                    </div>
-                <?php endif; ?>
-
-                <form method="POST">
-                    <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
-                    <div class="mb-3">
-                        <label for="contact_name" class="form-label">Full Name *</label>
-                        <input type="text" class="form-control" id="contact_name" name="contact_name" 
-                               value="<?= isset($_SESSION['user_email']) ? htmlspecialchars($_SESSION['user_email']) : ''; ?>" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="contact_email" class="form-label">Email *</label>
-                        <input type="email" class="form-control" id="contact_email" name="contact_email" 
-                               value="<?= isset($_SESSION['user_email']) ? htmlspecialchars($_SESSION['user_email']) : ''; ?>" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="contact_phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="contact_phone" name="contact_phone">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="message" class="form-label">Message *</label>
-                        <textarea class="form-control" id="message" name="message" rows="4" 
-                                  placeholder="I'm interested in this property..." required></textarea>
-                    </div>
-                    
-                    <button type="submit" name="submit_inquiry" class="btn btn-primary w-100">
-                        <i class="fas fa-paper-plane me-2"></i>Send Inquiry
-                    </button>
-                </form>
-            </div>
-
             <!-- Agent Information -->
             <div class="agent-card mt-4">
                 <h5 class="mb-3">Listed By</h5>
@@ -710,6 +725,7 @@ if (empty($property_features)) {
                     </a>
                 </div>
             </div>
+         
 
             <!-- Share Property -->
             <div class="property-details mt-4">
@@ -741,6 +757,48 @@ if (empty($property_features)) {
                     </div>
                 <?php endif; ?>
             </div>
+           
+            <!-- Contact Form -->
+            <div class="contact-form">
+                <h4 class="mb-4">Contact Agent</h4>
+                
+                <?php if ($inquiry_message): ?>
+                    <div class="alert <?= $inquiry_success ? 'alert-success' : 'alert-danger'; ?>">
+                        <?= htmlspecialchars($inquiry_message); ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="<?= SecurityValidator::getInstance()->generateCSRFToken(); ?>">
+                    <div class="mb-3">
+                        <label for="contact_name" class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="contact_name" name="contact_name" 
+                               value="<?= isset($_SESSION['user_email']) ? htmlspecialchars($_SESSION['user_email']) : ''; ?>" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="contact_email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="contact_email" name="contact_email" 
+                               value="<?= isset($_SESSION['user_email']) ? htmlspecialchars($_SESSION['user_email']) : ''; ?>" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="contact_phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="contact_phone" name="contact_phone">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message *</label>
+                        <textarea class="form-control" id="message" name="message" rows="4" 
+                                  placeholder="I'm interested in this property..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" name="submit_inquiry" class="btn btn-primary w-100">
+                        <i class="fas fa-paper-plane me-2"></i>Send Inquiry
+                    </button>
+                </form>
+            </div>
+
         </div>
     </div>
 </div>

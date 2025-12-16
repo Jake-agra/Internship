@@ -399,7 +399,7 @@ if (!empty($search_query) || !empty($property_type) || $min_price > 0 || $max_pr
         <a href="inquiries.php" class="nav-link">
             <i class="fas fa-envelope"></i> My Inquiries
         </a>
-        <a href="../profile.php" class="nav-link">
+        <a href="profile.php" class="nav-link">
             <i class="fas fa-user-cog"></i> Profile Settings
         </a>
         <hr class="my-3">

@@ -39,16 +39,10 @@ function redirectTo($path) {
 }
 
 // CSRF Protection
-function generateCSRFToken() {
-    if (!isset($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
-}
-
-function validateCSRFToken($token) {
-    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
-}
+// All CSRF token operations are centralized in SecurityValidator singleton
+// Use: SecurityValidator::getInstance()->generateCSRFToken() to generate tokens
+// Use: SecurityValidator::getInstance()->validateCSRFToken($token) to validate tokens
+// This ensures consistent CSRF protection across the entire application
 
 // Input sanitization
 function sanitizeInput($input) {

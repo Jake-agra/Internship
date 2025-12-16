@@ -4,26 +4,9 @@
 
 ---
 
-## 📖 **COMPLETE DOCUMENTATION**
-
-**📋 For full setup instructions, features overview, troubleshooting, and technical details:**
-
-### ➡️ **[VIEW COMPLETE DOCUMENTATION](COMPLETE_DOCUMENTATION.md)**
-
-The complete documentation includes:
-- 🚀 **Quick Start Guide** (5-minute setup)
-- ✨ **Comprehensive Features List**
-- 📁 **Project Structure Overview**
-- 📧 **Email System Configuration**
-- 🔧 **Troubleshooting Guide**
-- 🛡️ **Security Best Practices**
-- 🎯 **Usage Instructions for All Roles**
-
----
-
 ## ⚡ **QUICK START**
 
-1. **Database**: Create `realestate` database, import `Database/realestate_complete.sql`
+1. **Database**: Create `realestate` database, import `Database/realestate.sql`
 2. **Config**: Edit `Database/connection.php` with your credentials
 3. **Dependencies**: Run `cd composer && composer install`
 4. **Access**: http://localhost/realestate_/
@@ -55,16 +38,14 @@ The complete documentation includes:
 
 ## 🆘 **NEED HELP?**
 
-**📖 Check the [Complete Documentation](COMPLETE_DOCUMENTATION.md) first** - it contains detailed solutions for common issues, setup instructions, and comprehensive feature explanations.
+**📖 Check the [Quick Start Guide](QUICK_START_GUIDE.md) and [Implementation Summary](IMPLEMENTATION_SUMMARY.md)** for detailed solutions and setup instructions.
 
 **Common Issues:**
-- Database connection problems
-- Image upload issues  
-- Email configuration
-- Permission errors
-- Role-based access issues
-
-**All solutions are provided in the complete documentation with step-by-step instructions.**
+- Database connection problems → Check `Database/connection.php`
+- Image upload issues → Verify `uploads/properties/` folder permissions
+- Email configuration → Check `includes/smtp_config.php` and `.env` file
+- Permission errors → Ensure proper file/folder permissions
+- Role-based access issues → Verify user roles in database
 
 ---
 
@@ -84,4 +65,7 @@ The complete documentation includes:
 
 **🎉 Your professional real estate website is ready to deploy!**
 
-**📖 For complete setup and usage instructions:** [**COMPLETE_DOCUMENTATION.md**](COMPLETE_DOCUMENTATION.md)
+**📖 For setup and usage instructions:**
+- [**Quick Start Guide**](QUICK_START_GUIDE.md) - Get started in 5 minutes
+- [**Implementation Summary**](IMPLEMENTATION_SUMMARY.md) - Complete feature list
+- [**Deployment Guide**](DEPLOYMENT_GUIDE.md) - Production deployment steps
