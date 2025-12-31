@@ -627,7 +627,7 @@ INSERT INTO `prices` (`amount`, `currency`, `price_type`, `is_negotiable`) VALUE
 
 -- Insert default users (password: admin123)
 INSERT INTO `users` (`first_name`, `last_name`, `email`, `phone`, `password`, `role_id`, `email_verified`, `is_active`) VALUES
-('System', 'Administrator', 'admin@realestate.com', '+1234567890', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, 1),
+('System', 'Administrator', 'agrajeff15@gmail.com', '+1234567890', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, 1, 1),
 ('John', 'Agent', 'agent@realestate.com', '+1234567891', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, 1, 1),
 ('JEFFREY EYRAM KWEKU', 'AGRA', 'agrajeff@gmail.com', '0598147331', '$2y$10$KiplPF30/P6YKVYvS4aXSOlNTIcRjkF5yv73V9MzRnLPhgn8.HSfa', 3, 0, 1);
 
