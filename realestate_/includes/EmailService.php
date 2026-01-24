@@ -119,6 +119,25 @@ class EmailService {
         }
     }
 
+    /**
+     * Get the correct base URL for the application, including subdirectory if needed
+     */
+    private function getBaseUrl() {
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        
+        // Get the directory path from SCRIPT_NAME and extract just the subdirectory
+        $scriptPath = $_SERVER['SCRIPT_NAME'];
+        // Remove the filename to get the directory
+        $dir = dirname($scriptPath);
+        // Remove trailing slash if present (except for root)
+        if ($dir !== '/' && substr($dir, -1) === '/') {
+            $dir = rtrim($dir, '/');
+        }
+        
+        return $protocol . '://' . $host . $dir;
+    }
+
     private function getContactEmailTemplate($namee, $email, $phone, $message, $subject = 'General Inquiry') {
         $companyName = htmlspecialchars($this->config['company_name']);
         $companyEmail = htmlspecialchars($this->config['company_email']);
@@ -615,8 +634,8 @@ class EmailService {
     private function getVerificationEmailTemplate($name, $email, $verification_token) {
         $companyName = htmlspecialchars($this->config['company_name']);
         $companyEmail = htmlspecialchars($this->config['company_email']);
-        $websiteUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . "://" . $_SERVER['HTTP_HOST'];
-        $verificationUrl = $websiteUrl . '/verify_email.php?token=' . urlencode($verification_token);
+        $baseUrl = $this->getBaseUrl();
+        $verificationUrl = $baseUrl . '/verify_email.php?token=' . urlencode($verification_token);
         
         return "
         <!DOCTYPE html>
@@ -729,8 +748,8 @@ class EmailService {
                 </div>
                 <div class='footer'>
                     &copy; " . date('Y') . " " . $companyName . ". All rights reserved.<br>
-                    <a href='" . $websiteUrl . "' style='color: #666;'>Visit our website</a> | 
-                    <a href='" . $websiteUrl . "/contact.php' style='color: #666;'>Contact us</a>
+                    <a href='" . $baseUrl . "' style='color: #666;'>Visit our website</a> | 
+                    <a href='" . $baseUrl . "/contact.php' style='color: #666;'>Contact us</a>
                 </div>
             </div>
         </body>
